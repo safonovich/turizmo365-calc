@@ -1348,10 +1348,20 @@ function copyCalc() {
     return `• ${s.name}${s.price ? ': ' + fmt(s.price) : ' (включено)'}`;
   });
 
+  const today = new Date().toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
   let text = `🏕 TURIZMO 365 — Расчёт аренды\n`;
   text += `${'─'.repeat(28)}\n`;
-  text += `📅 Срок: ${S.days} ${dayWord(S.days)}\n`;
-  text += `⭐ Уровень: ${vipLabel(S.vip)}\n`;
+  text += `📅 Дата составления: ${today}\n`;
+  if (S.dateFrom) {
+    const df = new Date(S.dateFrom).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
+    text += `📅 Начало аренды: ${df}\n`;
+  }
+  if (S.dateTo) {
+    const dt = new Date(S.dateTo).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
+    text += `📅 Конец аренды: ${dt}\n`;
+  } else {
+    text += `📅 Срок: ${S.days} ${dayWord(S.days)}\n`;
+  }
   text += `${'─'.repeat(28)}\n`;
   text += `📦 Снаряжение:\n`;
   lines.filter(l => !SVCS.find(s => s.name === l.name))
