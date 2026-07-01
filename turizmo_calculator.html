@@ -1388,12 +1388,15 @@ function copyCalc() {
     return;
   }
 
-  const checkedSvcs = SVCS.filter(s => S.svcs[s.id]).map(s => {
-    if (s.hasCalc && transportPrice > 0) return `• ${s.name}: ${fmt(transportPrice)}`;
-    return `• ${s.name}${s.price ? ': ' + fmt(s.price) : ' (включено)'}`;
-  });
-
   const today = new Date().toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+
+  // Разделяем снаряжение и услуги
+  const svcNames = new Set(SVCS.map(s => s.name));
+  const equipLines = lines.filter(l => !svcNames.has(l.name));
+  const svcLines   = lines.filter(l =>  svcNames.has(l.name));
+  const equipTotal = equipLines.reduce((s, l) => s + l.price, 0);
+  const svcTotal   = svcLines.reduce((s, l) => s + l.price, 0);
+
   let text = `🏕 TURIZMO 365 — Расчёт аренды\n`;
   text += `${'─'.repeat(28)}\n`;
   text += `📅 Дата составления: ${today}\n`;
@@ -1408,13 +1411,35 @@ function copyCalc() {
     text += `📅 Срок: ${S.days} ${dayWord(S.days)}\n`;
   }
   text += `${'─'.repeat(28)}\n`;
-  text += `📦 Снаряжение:\n`;
-  lines.filter(l => !SVCS.find(s => s.name === l.name))
-       .forEach(l => { text += `  • ${l.name}${l.qty>1?' ×'+l.qty:''} — ${fmt(l.price)}\n`; });
-  if (checkedSvcs.length) {
-    text += `\n🔧 Услуги:\n`;
-    checkedSvcs.forEach(s => { text += `  ${s}\n`; });
+
+  // Блок снаряжения
+  if (equipLines.length > 0) {
+    text += `📦 Снаряжение:\n`;
+    equipLines.forEach(l => { text += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''} — ${fmt(l.price)}\n`; });
+    text += `  Итого снаряжение: ${fmt(equipTotal)}\n`;
   }
+
+  // Блок услуг с реальными ценами
+  const activeSvcs = SVCS.filter(s => S.svcs[s.id]);
+  if (activeSvcs.length > 0) {
+    text += `\n🔧 Услуги:\n`;
+    activeSvcs.forEach(s => {
+      if (s.hasCalc) {
+        if (transportPrice > 0) text += `  • ${s.name}: ${fmt(transportPrice)}\n`;
+        return;
+      }
+      if (SVC_RATES[s.id]) {
+        const ap = autoSvcPrice(s.id);
+        text += `  • ${s.name}: ${ap > 0 ? fmt(ap) : '(включено)'}\n`;
+        return;
+      }
+      if (s.price) { text += `  • ${s.name}: ${fmt(s.price)}\n`; return; }
+      const ep = S.svcPrices[s.id] || 0;
+      text += `  • ${s.name}: ${ep > 0 ? fmt(ep) : '(включено)'}\n`;
+    });
+    if (svcTotal > 0) text += `  Итого услуги: ${fmt(svcTotal)}\n`;
+  }
+
   text += `${'─'.repeat(28)}\n`;
   text += `💰 ИТОГО: ${fmt(total)}`;
   if (savings > 0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
@@ -1611,7 +1636,7 @@ function kpPrint() {
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#1e293b; background:white; padding:24px 28px; }
 @page { size:A4 portrait; margin:0; }
-@media print { body { padding:1.5cm; } * { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+@media print { body { padding:1.5cm; } * { -webkit-print-color-adjust:exact; print-color-adjust:exact; } .no-print { display:none !important; } }
 
 .hdr { display:table; width:100%; margin-bottom:18px; }
 .hdr-logo { display:table-cell; width:58px; vertical-align:middle; }
@@ -1656,6 +1681,9 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
   </tbody>
 </table>
 <div class="foot">TURIZMO 365 · ${d.today}</div>
+<div class="no-print" style="text-align:center;margin-top:24px;">
+  <button onclick="window.close()" style="padding:12px 28px;background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:12px;font-size:15px;font-weight:600;color:#475569;cursor:pointer;">✕ Закрыть окно</button>
+</div>
 <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
 </body></html>`);
   printWin.document.close();
