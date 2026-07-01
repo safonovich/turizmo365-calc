@@ -408,9 +408,19 @@ body {
 
 /* ─── PRINT (КП) ─── */
 @media print {
+  @page { margin: 1.5cm; size: A4 portrait; }
   body > *:not(#kp-overlay) { display: none !important; }
-  #kp-overlay { position: static !important; overflow: visible !important; }
+  #kp-overlay {
+    position: static !important;
+    overflow: visible !important;
+    background: white !important;
+    height: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
   #kp-overlay .kp-toolbar { display: none !important; }
+  #kp-overlay > div { max-width: 100% !important; padding: 0 !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 /* ─── DELIVERY CALC ─── */
@@ -1466,7 +1476,7 @@ function generateKP() {
 
   const savingsRow = savings > 0 ? `
     <tr>
-      <td style="padding:8px 12px;color:#16a34a;">Скидка (${vipLabel})</td>
+      <td style="padding:8px 12px;color:#16a34a;">Скидка</td>
       <td style="padding:8px 12px;text-align:right;color:#16a34a;">−${savings.toLocaleString('ru-RU')} ₽</td>
     </tr>` : '';
 
@@ -1504,7 +1514,7 @@ function generateKP() {
           <span style="font-weight:600;white-space:nowrap;margin-left:12px;">${l.price.toLocaleString('ru-RU')} ₽</span>
         </div>`).join('')}
         ${savings > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#16a34a;">
-          <span>Скидка (${vipLabel})</span><span style="font-weight:600;">−${savings.toLocaleString('ru-RU')} ₽</span>
+          <span>Скидка</span><span style="font-weight:600;">−${savings.toLocaleString('ru-RU')} ₽</span>
         </div>` : ''}
         <div style="display:flex;justify-content:space-between;padding:14px 16px;background:#eff6ff;border-top:2px solid #1d4ed8;">
           <span style="font-weight:700;font-size:16px;color:#1d4ed8;">ИТОГО К ОПЛАТЕ</span>
