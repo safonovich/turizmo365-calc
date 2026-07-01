@@ -228,13 +228,41 @@ body {
 }
 .qty-btn.minus:active, .qty-btn.plus:active { background: var(--primary-light); border-color: var(--primary); }
 .qty-num {
-  min-width: 26px;
+  width: 44px;
   text-align: center;
   font-size: 16px;
   font-weight: 800;
   color: var(--text);
+  border: none;
+  background: transparent;
+  -moz-appearance: textfield;
+  outline: none;
+  padding: 0;
 }
+.qty-num::-webkit-inner-spin-button,
+.qty-num::-webkit-outer-spin-button { -webkit-appearance: none; }
 .qty-num.has-qty { color: var(--primary); }
+.days-big-input {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: center;
+  width: 80px;
+  border: none;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+  line-height: 1;
+  display: block;
+  margin: 0 auto;
+}
+.days-big-input::-webkit-inner-spin-button,
+.days-big-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.date-input {
+  width: 100% !important;
+  font-size: 14px !important;
+  padding: 8px 10px !important;
+}
 
 /* ─── SERVICES ─── */
 .svc-item {
@@ -505,13 +533,24 @@ body {
   </div>
 </div>
 
-<!-- DAYS -->
+<!-- DAYS + DATES -->
 <div class="card">
-  <div class="card-title">📅 Количество суток аренды</div>
+  <div class="card-title">📅 Даты и срок аренды</div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;">
+    <div style="flex:1;">
+      <div class="dlv-label" style="font-size:11px;margin-bottom:4px;">Дата начала</div>
+      <input type="date" class="dlv-input date-input" id="date-from" onchange="setDateFrom(this.value)">
+    </div>
+    <div style="flex:1;">
+      <div class="dlv-label" style="font-size:11px;margin-bottom:4px;">Дата окончания</div>
+      <input type="date" class="dlv-input date-input" id="date-to" onchange="setDateTo(this.value)">
+    </div>
+  </div>
   <div class="days-row">
     <button class="btn-circle" onclick="changeDays(-1)">−</button>
     <div class="days-center">
-      <div class="days-big" id="days-num">1</div>
+      <input type="number" class="days-big-input" id="days-num" value="1" min="1" max="21"
+        oninput="setDaysManual(this.value)">
       <div class="days-label">суток</div>
       <div class="days-rate-badge" id="rate-badge">Стандартный тариф</div>
     </div>
@@ -581,10 +620,12 @@ const SUP_IDS  = new Set(['sup_std','sup_tan','sup_pre']);
 const KBOAT_IDS = new Set(['shuya3','shuya2','shuya1','luga3','raft','packraft']);
 // Ставки услуг в ₽ за 1 единицу (байдарка / сап)
 const SVC_RATES = {
-  assembly_kd:  { per: 1000, ids: KBOAT_IDS, unit: 'байд.' },
-  wash_kd:      { per: 600,  ids: KBOAT_IDS, unit: 'байд.' },
-  assembly_sup: { per: 600,  ids: SUP_IDS,   unit: 'сап'   },
-  wash_sup:     { per: 300,  ids: SUP_IDS,   unit: 'сап'   },
+  assemble_kd:    { per: 500, ids: KBOAT_IDS, unit: 'байд.' },
+  disassemble_kd: { per: 500, ids: KBOAT_IDS, unit: 'байд.' },
+  wash_kd:        { per: 600, ids: KBOAT_IDS, unit: 'байд.' },
+  assemble_sup:   { per: 300, ids: SUP_IDS,   unit: 'сап'   },
+  disassemble_sup:{ per: 300, ids: SUP_IDS,   unit: 'сап'   },
+  wash_sup:       { per: 300, ids: SUP_IDS,   unit: 'сап'   },
 };
 function autoSvcPrice(svcId) {
   const r = SVC_RATES[svcId];
@@ -699,11 +740,13 @@ const KEMP = [
 
 // УСЛУГИ
 const SVCS = [
-  { id:'transport',     name:'Доставка / Забор снаряжения', desc:'Расчёт по адресу и маршруту', price:null, tag:'🚚', hasCalc:true },
-  { id:'assembly_kd',   name:'Сборка/разборка байдарок',   desc:'Входит в договор',             price:null, tag:'🔨' },
-  { id:'wash_kd',       name:'Мойка/сушка байдарок',       desc:'Входит в договор',             price:null, tag:'🚿' },
-  { id:'assembly_sup',  name:'Сборка/разборка сапбордов',  desc:'Входит в договор',             price:null, tag:'🔨' },
-  { id:'wash_sup',      name:'Мойка/сушка сапбордов',      desc:'Входит в договор',             price:null, tag:'🚿' },
+  { id:'transport',       name:'Доставка / Забор снаряжения', desc:'Расчёт по адресу и маршруту', price:null, tag:'🚚', hasCalc:true },
+  { id:'assemble_kd',    name:'Сборка байдарок',            desc:'500₽ / байдарка',              price:null, tag:'🔨' },
+  { id:'disassemble_kd', name:'Разборка байдарок',          desc:'500₽ / байдарка',              price:null, tag:'🔧' },
+  { id:'wash_kd',        name:'Мойка/сушка байдарок',       desc:'600₽ / байдарка',              price:null, tag:'🚿' },
+  { id:'assemble_sup',   name:'Сборка сапбордов',           desc:'300₽ / сап',                   price:null, tag:'🔨' },
+  { id:'disassemble_sup',name:'Разборка сапбордов',         desc:'300₽ / сап',                   price:null, tag:'🔧' },
+  { id:'wash_sup',       name:'Мойка/сушка сапбордов',      desc:'300₽ / сап',                   price:null, tag:'🚿' },
   { id:'lager',         name:'Организация лагеря',         desc:'Палатки, шатры',               price:null, tag:'🏕' },
   { id:'wash_palatka',  name:'Мойка/сушка палатки',        desc:'При необходимости',             price:800,  tag:'🧹' },
   { id:'wash_spalnyi',  name:'Мойка/сушка спальника',      desc:'При необходимости',             price:600,  tag:'🧹' },
@@ -718,6 +761,8 @@ let transportPrice = 0;
 let S = {
   vip: 'ррц',
   days: 1,
+  dateFrom: '',
+  dateTo: '',
   qty: {},
   svcs: {},
   svcPrices: {},
@@ -888,7 +933,10 @@ function renderSection(items, secId, priceFn, discCat) {
       </div>
       <div class="qty-ctrl">
         <button class="qty-btn minus" onclick="chQty('${item.id}',-1)">−</button>
-        <div class="qty-num ${qty?'has-qty':''}" id="qn-${item.id}">${qty}</div>
+        <input type="number" class="qty-num ${qty?'has-qty':''}" id="qn-${item.id}"
+          value="${qty}" min="0" max="99"
+          onclick="event.stopPropagation()"
+          oninput="setQtyDirect('${item.id}',this.value)">
         <button class="qty-btn plus" onclick="chQty('${item.id}',1)">+</button>
       </div>
     </div>`;
@@ -1064,7 +1112,8 @@ function updateTotals() {
   const savEl = document.getElementById('saving-label');
   savEl.textContent = (savings > 0 && S.vip !== 'ррц') ? `Скидка: ${fmt(savings)}` : '';
 
-  document.getElementById('days-num').textContent = S.days;
+  const daysEl = document.getElementById('days-num');
+  if (daysEl) daysEl.value = S.days;
   document.getElementById('rate-badge').textContent = rateLabel(S.days);
 
   // Breakdown
@@ -1094,10 +1143,61 @@ function setVip(btn) {
 
 function changeDays(d) {
   S.days = Math.max(1, Math.min(21, S.days + d));
-  const warn = document.getElementById('warn-weekend');
-  // Показываем предупреждение только как напоминание (менеджер сам знает дни)
-  warn.classList.remove('show');
+  // Сбрасываем дату окончания если дни изменены вручную
+  if (S.dateFrom) {
+    const d1 = new Date(S.dateFrom);
+    d1.setDate(d1.getDate() + S.days);
+    S.dateTo = d1.toISOString().slice(0,10);
+    const dtEl = document.getElementById('date-to');
+    if (dtEl) dtEl.value = S.dateTo;
+  }
+  document.getElementById('warn-weekend').classList.remove('show');
   renderAll();
+}
+
+function setDaysManual(val) {
+  const n = Math.max(1, Math.min(21, parseInt(val) || 1));
+  S.days = n;
+  if (S.dateFrom) {
+    const d1 = new Date(S.dateFrom);
+    d1.setDate(d1.getDate() + n);
+    S.dateTo = d1.toISOString().slice(0,10);
+    const dtEl = document.getElementById('date-to');
+    if (dtEl) dtEl.value = S.dateTo;
+  }
+  renderAll();
+}
+
+function setDateFrom(val) {
+  S.dateFrom = val;
+  if (S.dateTo && val > S.dateTo) { S.dateTo = ''; document.getElementById('date-to').value = ''; }
+  calcDaysFromDates();
+}
+
+function setDateTo(val) {
+  S.dateTo = val;
+  calcDaysFromDates();
+}
+
+function calcDaysFromDates() {
+  if (S.dateFrom && S.dateTo && S.dateTo > S.dateFrom) {
+    const diff = Math.round((new Date(S.dateTo) - new Date(S.dateFrom)) / 86400000);
+    if (diff >= 1) {
+      S.days = Math.min(21, diff);
+      const el = document.getElementById('days-num');
+      if (el) el.value = S.days;
+      renderAll();
+      return;
+    }
+  }
+  renderAll();
+}
+
+function setQtyDirect(id, val) {
+  S.qty[id] = Math.max(0, parseInt(val) || 0);
+  const el = document.getElementById('qn-' + id);
+  if (el) el.classList.toggle('has-qty', S.qty[id] > 0);
+  updateTotals();
 }
 
 function setCat(cat, btn) {
@@ -1112,7 +1212,7 @@ function chQty(id, delta) {
   S.qty[id] = Math.max(0, (S.qty[id] || 0) + delta);
   const el = document.getElementById('qn-' + id);
   if (el) {
-    el.textContent = S.qty[id];
+    el.value = S.qty[id];
     el.classList.toggle('has-qty', S.qty[id] > 0);
   }
   updateTotals();
@@ -1375,9 +1475,9 @@ function generateKP() {
         </div>
       </div>
       <div style="display:flex;gap:20px;margin-bottom:16px;font-size:13px;flex-wrap:wrap;">
-        <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Дата</div>${today}</div>
-        <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Срок аренды</div>${dayText}</div>
-        <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Уровень</div><span style="background:#fef9c3;color:#b45309;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">${vipLabel}</span></div>
+        <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Дата составления</div>${today}</div>
+        ${S.dateFrom ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Начало аренды</div>${new Date(S.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : ''}
+        ${S.dateTo ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Конец аренды</div>${new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Срок аренды</div>${dayText}</div>`}
       </div>
       <div style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
         <div style="background:#f0f4f8;padding:10px 16px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">
