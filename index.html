@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TURIZMO 365 — Калькулятор</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root {
   --bg: #f0f4f8;
@@ -344,6 +345,22 @@ body {
   transition: opacity 0.15s;
 }
 .btn-copy:active { opacity: 0.88; }
+.btn-kp {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+  transition: opacity 0.15s;
+  margin-top: 8px;
+}
+.btn-kp:active { opacity: 0.88; }
 .btn-reset {
   background: none;
   border: none;
@@ -530,6 +547,7 @@ body {
     <div class="sticky-total" id="total-display">0 ₽</div>
   </div>
   <button class="btn-copy" id="btn-copy-html" onclick="copyCalc()">📋 Скопировать расчёт</button>
+  <button class="btn-kp" id="btn-kp-html" onclick="generateKP()">📄 Сформировать КП</button>
   <div style="text-align:center;margin-top:8px">
     <button class="btn-reset" onclick="resetAll()">Сбросить всё</button>
   </div>
@@ -677,6 +695,7 @@ let S = {
   days: 1,
   qty: {},
   svcs: {},
+  svcPrices: {},
   // Поля калькулятора доставки
   dlv: {
     addrFrom: '',   // Откуда (база/склад)
@@ -778,10 +797,20 @@ function calcAll() {
       if (transportPrice > 0) { total += transportPrice; base += transportPrice; lines.push({ name: s.name, qty:1, price: transportPrice }); }
       return;
     }
-    if (!s.price) return;
-    total += s.price;
-    base += s.price;
-    lines.push({ name: s.name, qty: 1, price: s.price });
+    // services with a fixed price (wash_palatka, wash_spalnyi)
+    if (s.price) {
+      total += s.price;
+      base += s.price;
+      lines.push({ name: s.name, qty: 1, price: s.price });
+      return;
+    }
+    // "Включено" services with editable price
+    const ep = S.svcPrices[s.id] || 0;
+    if (ep > 0) {
+      total += ep;
+      base += ep;
+      lines.push({ name: s.name, qty: 1, price: ep });
+    }
   });
 
   return { total, savings: base - total, lines };
@@ -944,8 +973,11 @@ function renderServices() {
       priceStr = on && transportPrice > 0
         ? `<b style="color:var(--primary)">${fmt(transportPrice)}</b>`
         : (on ? 'Введите адреса ниже' : 'Включить для расчёта');
+    } else if (s.price) {
+      priceStr = fmt(s.price);
     } else {
-      priceStr = s.price ? fmt(s.price) : 'Включено';
+      const ep = S.svcPrices[s.id] || 0;
+      priceStr = ep > 0 ? `<b style="color:var(--primary)">${fmt(ep)}</b>` : 'Включено';
     }
     const itemHtml = `<div class="svc-item" onclick="toggleSvc('${s.id}')">
       <div class="svc-check ${on?'on':''}"></div>
@@ -954,9 +986,26 @@ function renderServices() {
         <div class="svc-desc">${s.desc} — ${priceStr}</div>
       </div>
     </div>`;
+    // price input for "Включено" services when enabled
+    let priceInputHtml = '';
+    if (on && !s.hasCalc && !s.price) {
+      const curVal = S.svcPrices[s.id] || '';
+      priceInputHtml = `<div class="svc-expand" style="display:block;padding:10px 14px 12px;">
+        <div class="dlv-label" style="font-size:12px;margin-bottom:6px;">Стоимость услуги, ₽</div>
+        <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
+          placeholder="0" value="${curVal}"
+          onclick="event.stopPropagation()"
+          oninput="setSvcPrice('${s.id}',this.value)">
+      </div>`;
+    }
     const expandHtml = (on && s.hasCalc) ? dlvCalcPanel() : '';
-    return itemHtml + expandHtml;
+    return itemHtml + priceInputHtml + expandHtml;
   }).join('');
+}
+
+function setSvcPrice(id, val) {
+  S.svcPrices[id] = parseInt(val) || 0;
+  updateTotals();
 }
 
 function renderAll() {
@@ -1236,6 +1285,90 @@ function showToast(msg) {
 
   syncMainButton();
 })();
+
+// ════════════════════════════════════════════
+//  КП — КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ (PDF)
+// ════════════════════════════════════════════
+function generateKP() {
+  const { total, savings, lines } = calcAll();
+  if (lines.length === 0) {
+    showToast('⚠️ Добавьте оборудование в заказ');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' });
+  const vipLabels = { 'ррц':'РРЦ (без скидки)', 'vip1':'VIP-1 (15%)', 'vip2':'VIP-2 (20%)', 'vip3':'VIP-3 (25%)', 'vip4':'VIP-4 (30%)' };
+  const vipLabel = vipLabels[S.vip] || S.vip;
+  const dayText = S.days === 1 ? '1 сутки' : S.days + ' суток';
+
+  const rowsHtml = lines.map(l => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;">${l.name}${l.qty > 1 ? ` &times;${l.qty}` : ''}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">${l.price.toLocaleString('ru-RU')} ₽</td>
+    </tr>`).join('');
+
+  const savingsRow = savings > 0 ? `
+    <tr>
+      <td style="padding:8px 12px;color:#16a34a;">Скидка (${vipLabel})</td>
+      <td style="padding:8px 12px;text-align:right;color:#16a34a;">−${savings.toLocaleString('ru-RU')} ₽</td>
+    </tr>` : '';
+
+  const kpHtml = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; color: #1e293b; margin: 0; padding: 32px; font-size: 14px; }
+    .header { background: linear-gradient(135deg,#1e3a8a,#2563eb); color:white; padding:24px 28px; border-radius:12px; margin-bottom:24px; }
+    .header h1 { margin:0; font-size:22px; font-weight:800; }
+    .header p { margin:4px 0 0; font-size:13px; opacity:.8; }
+    .meta { display:flex; gap:32px; margin-bottom:24px; font-size:13px; }
+    .meta-item { }
+    .meta-item b { display:block; color:#64748b; font-size:11px; text-transform:uppercase; margin-bottom:2px; }
+    table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+    th { background:#f0f4f8; padding:10px 12px; text-align:left; font-size:12px; text-transform:uppercase; color:#64748b; letter-spacing:.5px; }
+    th:last-child { text-align:right; }
+    .total-row td { padding:10px 12px; font-weight:700; font-size:16px; background:#eff6ff; border-top:2px solid #1d4ed8; color:#1d4ed8; }
+    .total-row td:last-child { text-align:right; }
+    .footer { margin-top:32px; font-size:12px; color:#94a3b8; text-align:center; border-top:1px solid #e2e8f0; padding-top:16px; }
+    .badge { display:inline-block; background:#fef9c3; color:#b45309; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+  </style></head><body>
+  <div class="header">
+    <h1>🏕 TURIZMO 365</h1>
+    <p>Коммерческое предложение · Аренда туристического снаряжения</p>
+  </div>
+  <div class="meta">
+    <div class="meta-item"><b>Дата</b>${today}</div>
+    <div class="meta-item"><b>Срок аренды</b>${dayText}</div>
+    <div class="meta-item"><b>Уровень</b><span class="badge">${vipLabel}</span></div>
+  </div>
+  <table>
+    <thead><tr><th>Позиция</th><th style="text-align:right;">Сумма</th></tr></thead>
+    <tbody>
+      ${rowsHtml}
+      ${savingsRow}
+    </tbody>
+    <tfoot><tr class="total-row"><td>ИТОГО К ОПЛАТЕ</td><td>${total.toLocaleString('ru-RU')} ₽</td></tr></tfoot>
+  </table>
+  <p style="font-size:12px;color:#64748b;margin-top:8px;">
+    * В стоимость входит снаряжение в полной комплектации. Оплата при получении или по реквизитам.
+  </p>
+  <div class="footer">TURIZMO 365 · @Turizmo365bot · Генерация: ${today}</div>
+  </body></html>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = kpHtml;
+  el.style.cssText = 'position:fixed;left:-9999px;top:0;width:650px;';
+  document.body.appendChild(el);
+
+  html2pdf().set({
+    margin: 0,
+    filename: `КП_TURIZMO365_${new Date().toISOString().slice(0,10)}.pdf`,
+    image: { type:'jpeg', quality:0.97 },
+    html2canvas: { scale:2, useCORS:true },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+  }).from(el.firstChild).save().then(() => {
+    document.body.removeChild(el);
+    showToast('📄 КП сохранено!');
+  });
+}
 
 // ════════════════════════════════════════════
 //  INIT
