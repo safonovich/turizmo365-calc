@@ -576,6 +576,24 @@ const DISC = {
 
 // ЛОДКИ — [цена 1д, 2д, 3д, 4д, 5д, 6д, 7д, тариф 8-14д/сут, тариф 15-21д/сут]
 // null = цена не указана отдельно, используется rate5plus
+// ─── Категории лодок для расчёта услуг ───
+const SUP_IDS  = new Set(['sup_std','sup_tan','sup_pre']);
+const KBOAT_IDS = new Set(['shuya3','shuya2','shuya1','luga3','raft','packraft']);
+// Ставки услуг в ₽ за 1 единицу (байдарка / сап)
+const SVC_RATES = {
+  assembly_kd:  { per: 1000, ids: KBOAT_IDS, unit: 'байд.' },
+  wash_kd:      { per: 600,  ids: KBOAT_IDS, unit: 'байд.' },
+  assembly_sup: { per: 600,  ids: SUP_IDS,   unit: 'сап'   },
+  wash_sup:     { per: 300,  ids: SUP_IDS,   unit: 'сап'   },
+};
+function autoSvcPrice(svcId) {
+  const r = SVC_RATES[svcId];
+  if (!r) return 0;
+  let n = 0;
+  BOATS.forEach(b => { if (r.ids.has(b.id)) n += (S.qty[b.id] || 0); });
+  return n * r.per;
+}
+
 const BOATS = [
   {
     id:'shuya3', cat:'boats',
@@ -811,7 +829,16 @@ function calcAll() {
       lines.push({ name: s.name, qty: 1, price: s.price });
       return;
     }
-    // "Включено" services with editable price
+    // auto-calculated per-unit services (assembly/wash kayaks & SUPs)
+    if (SVC_RATES[s.id]) {
+      const ap = autoSvcPrice(s.id);
+      if (ap > 0) {
+        total += ap; base += ap;
+        lines.push({ name: s.name, qty: 1, price: ap });
+      }
+      return;
+    }
+    // "Включено" services with editable price (lager, etc.)
     const ep = S.svcPrices[s.id] || 0;
     if (ep > 0) {
       total += ep;
@@ -982,6 +1009,13 @@ function renderServices() {
         : (on ? 'Введите адреса ниже' : 'Включить для расчёта');
     } else if (s.price) {
       priceStr = fmt(s.price);
+    } else if (SVC_RATES[s.id]) {
+      const ap = autoSvcPrice(s.id);
+      const r = SVC_RATES[s.id];
+      let n = 0; BOATS.forEach(b => { if (r.ids.has(b.id)) n += (S.qty[b.id]||0); });
+      priceStr = ap > 0
+        ? `<b style="color:var(--primary)">${fmt(ap)}</b> <span style="font-size:11px;color:#94a3b8;">(${n} ${r.unit} × ${r.per}₽)</span>`
+        : `${r.per}₽ / ${r.unit}`;
     } else {
       const ep = S.svcPrices[s.id] || 0;
       priceStr = ep > 0 ? `<b style="color:var(--primary)">${fmt(ep)}</b>` : 'Включено';
@@ -993,9 +1027,9 @@ function renderServices() {
         <div class="svc-desc">${s.desc} — ${priceStr}</div>
       </div>
     </div>`;
-    // price input for "Включено" services when enabled
+    // price input only for non-auto "Включено" services (lager etc.)
     let priceInputHtml = '';
-    if (on && !s.hasCalc && !s.price) {
+    if (on && !s.hasCalc && !s.price && !SVC_RATES[s.id]) {
       const curVal = S.svcPrices[s.id] || '';
       priceInputHtml = `<div class="svc-expand" style="display:block;padding:10px 14px 12px;">
         <div class="dlv-label" style="font-size:12px;margin-bottom:6px;">Стоимость услуги, ₽</div>
