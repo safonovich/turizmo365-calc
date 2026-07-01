@@ -406,6 +406,42 @@ body {
   text-underline-offset: 3px;
 }
 
+/* ─── DATE RANGE PICKER ─── */
+.date-range-btn {
+  width:100%; padding:11px 14px; border:1.5px solid var(--border);
+  border-radius:12px; background:var(--primary-light); color:var(--primary);
+  font-size:14px; font-weight:600; cursor:pointer; display:flex;
+  justify-content:space-between; align-items:center; margin-bottom:14px; text-align:left;
+}
+.date-range-btn:active { opacity:.8; }
+.cal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.cal-box {
+  background:white; border-radius:20px 20px 0 0; padding:20px 16px;
+  width:100%; max-width:440px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-nav {
+  background:var(--primary-light); border:none; color:var(--primary);
+  font-size:18px; width:36px; height:36px; border-radius:10px; cursor:pointer; font-weight:700;
+}
+.cal-month-title { font-weight:700; font-size:15px; text-align:center; }
+.cal-hint { font-size:11px; color:var(--text-muted); text-align:center; margin-top:2px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-top:6px; }
+.cal-dow { text-align:center; font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 0; }
+.cal-day {
+  text-align:center; padding:9px 2px; border-radius:8px;
+  cursor:pointer; font-size:14px; line-height:1; user-select:none;
+}
+.cal-day.empty { cursor:default; }
+.cal-day:not(.empty):hover { background:var(--primary-light); }
+.cal-day.today { font-weight:700; outline:1.5px solid var(--primary); outline-offset:-1px; border-radius:8px; }
+.cal-day.start,.cal-day.end { background:var(--primary) !important; color:white !important; font-weight:700; }
+.cal-day.in-range { background:var(--primary-light); color:var(--primary); }
+
 /* ─── PRINT (КП) ─── */
 @media print {
   @page { margin: 1.5cm; size: A4 portrait; }
@@ -552,16 +588,10 @@ body {
 <!-- DAYS + DATES -->
 <div class="card">
   <div class="card-title">📅 Даты и срок аренды</div>
-  <div style="display:flex;gap:10px;margin-bottom:14px;">
-    <div style="flex:1;">
-      <div class="dlv-label" style="font-size:11px;margin-bottom:4px;">Дата начала</div>
-      <input type="date" class="dlv-input date-input" id="date-from" onchange="setDateFrom(this.value)">
-    </div>
-    <div style="flex:1;">
-      <div class="dlv-label" style="font-size:11px;margin-bottom:4px;">Дата окончания</div>
-      <input type="date" class="dlv-input date-input" id="date-to" onchange="setDateTo(this.value)">
-    </div>
-  </div>
+  <button class="date-range-btn" onclick="openDatePicker()">
+    <span id="date-range-label">📅 Выбрать даты аренды</span>
+    <span>›</span>
+  </button>
   <div class="days-row">
     <button class="btn-circle" onclick="changeDays(-1)">−</button>
     <div class="days-center">
@@ -1159,15 +1189,13 @@ function setVip(btn) {
 
 function changeDays(d) {
   S.days = Math.max(1, Math.min(21, S.days + d));
-  // Сбрасываем дату окончания если дни изменены вручную
   if (S.dateFrom) {
     const d1 = new Date(S.dateFrom);
     d1.setDate(d1.getDate() + S.days);
     S.dateTo = d1.toISOString().slice(0,10);
-    const dtEl = document.getElementById('date-to');
-    if (dtEl) dtEl.value = S.dateTo;
   }
   document.getElementById('warn-weekend').classList.remove('show');
+  updateDateRangeLabel();
   renderAll();
 }
 
@@ -1178,20 +1206,21 @@ function setDaysManual(val) {
     const d1 = new Date(S.dateFrom);
     d1.setDate(d1.getDate() + n);
     S.dateTo = d1.toISOString().slice(0,10);
-    const dtEl = document.getElementById('date-to');
-    if (dtEl) dtEl.value = S.dateTo;
   }
+  updateDateRangeLabel();
   renderAll();
 }
 
 function setDateFrom(val) {
   S.dateFrom = val;
-  if (S.dateTo && val > S.dateTo) { S.dateTo = ''; document.getElementById('date-to').value = ''; }
+  if (S.dateTo && val > S.dateTo) { S.dateTo = ''; }
+  updateDateRangeLabel();
   calcDaysFromDates();
 }
 
 function setDateTo(val) {
   S.dateTo = val;
+  updateDateRangeLabel();
   calcDaysFromDates();
 }
 
@@ -1425,10 +1454,6 @@ function showToast(msg) {
   tg.ready();
   tg.expand(); // на весь экран
 
-  // Скрываем HTML-кнопку — вместо неё используем нативную MainButton Telegram
-  const htmlCopyBtn = document.getElementById('btn-copy-html');
-  if (htmlCopyBtn) htmlCopyBtn.style.display = 'none';
-
   // Нижняя нативная кнопка Telegram — «Скопировать расчёт»
   const mb = tg.MainButton;
   mb.setText('📋 Скопировать расчёт');
@@ -1634,6 +1659,137 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
 <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
 </body></html>`);
   printWin.document.close();
+}
+
+// ════════════════════════════════════════════
+//  DATE RANGE PICKER
+// ════════════════════════════════════════════
+let _calYear, _calMonth, _calSel1, _calSel2;
+
+function updateDateRangeLabel() {
+  const el = document.getElementById('date-range-label');
+  if (!el) return;
+  if (S.dateFrom && S.dateTo) {
+    const df = new Date(S.dateFrom + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    const dt = new Date(S.dateTo + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    el.textContent = '📅 ' + df + ' → ' + dt;
+  } else if (S.dateFrom) {
+    const df = new Date(S.dateFrom + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    el.textContent = '📅 С ' + df + ' → ...';
+  } else {
+    el.textContent = '📅 Выбрать даты аренды';
+  }
+}
+
+function openDatePicker() {
+  const now = new Date();
+  _calYear = S.dateFrom ? +S.dateFrom.slice(0,4) : now.getFullYear();
+  _calMonth = S.dateFrom ? +S.dateFrom.slice(5,7) - 1 : now.getMonth();
+  _calSel1 = S.dateFrom || null;
+  _calSel2 = S.dateTo || null;
+  renderCal();
+}
+
+function renderCal() {
+  const existing = document.getElementById('cal-overlay');
+  if (existing) existing.remove();
+
+  const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const DOWS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDate = new Date(_calYear, _calMonth + 1, 0).getDate();
+  let startDow = firstDay.getDay(); // 0=Вс
+  startDow = startDow === 0 ? 6 : startDow - 1; // Пн=0
+
+  let hint = '';
+  if (_calSel1 && _calSel2) {
+    const df = new Date(_calSel1+'T12:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'short'});
+    const dt = new Date(_calSel2+'T12:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'short'});
+    hint = df + ' → ' + dt;
+  } else if (_calSel1) {
+    hint = 'Теперь выберите дату окончания';
+  } else {
+    hint = 'Выберите дату начала аренды';
+  }
+
+  let gridHtml = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < startDow; i++) gridHtml += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = _calYear + '-' + String(_calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    let cls = 'cal-day';
+    if (ds === today) cls += ' today';
+    if (ds === _calSel1) cls += ' start';
+    if (ds === _calSel2) cls += ' end';
+    if (_calSel1 && _calSel2 && ds > _calSel1 && ds < _calSel2) cls += ' in-range';
+    gridHtml += `<div class="${cls}" data-date="${ds}">${d}</div>`;
+  }
+
+  const applyBtn = (_calSel1 && _calSel2)
+    ? `<button id="cal-apply" style="width:100%;margin-top:14px;padding:13px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">✓ Применить</button>`
+    : '';
+
+  const ov = document.createElement('div');
+  ov.id = 'cal-overlay';
+  ov.className = 'cal-overlay';
+  ov.innerHTML = `
+    <div class="cal-box">
+      <div class="cal-header">
+        <button class="cal-nav" id="cal-prev">‹</button>
+        <div>
+          <div class="cal-month-title">${MONTHS[_calMonth]} ${_calYear}</div>
+          <div class="cal-hint">${hint}</div>
+        </div>
+        <button class="cal-nav" id="cal-next">›</button>
+      </div>
+      <div class="cal-grid">${gridHtml}</div>
+      ${applyBtn}
+    </div>`;
+
+  document.body.appendChild(ov);
+
+  ov.addEventListener('click', function(e) { if (e.target === ov) closeDatePicker(); });
+  document.getElementById('cal-prev').addEventListener('click', function() {
+    _calMonth--; if (_calMonth < 0) { _calMonth = 11; _calYear--; } renderCal();
+  });
+  document.getElementById('cal-next').addEventListener('click', function() {
+    _calMonth++; if (_calMonth > 11) { _calMonth = 0; _calYear++; } renderCal();
+  });
+  const applyEl = document.getElementById('cal-apply');
+  if (applyEl) applyEl.addEventListener('click', function() { applyDateRange(); closeDatePicker(); });
+
+  ov.querySelectorAll('.cal-day[data-date]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const date = this.dataset.date;
+      if (!_calSel1 || (_calSel1 && _calSel2) || date < _calSel1) {
+        _calSel1 = date; _calSel2 = null;
+      } else if (date === _calSel1) {
+        _calSel1 = null; _calSel2 = null;
+      } else {
+        _calSel2 = date;
+        applyDateRange();
+        closeDatePicker();
+        return;
+      }
+      renderCal();
+    });
+  });
+}
+
+function applyDateRange() {
+  if (_calSel1) { S.dateFrom = _calSel1; }
+  if (_calSel2) { S.dateTo = _calSel2; }
+  if (_calSel1 && _calSel2) {
+    const diff = Math.round((new Date(_calSel2) - new Date(_calSel1)) / 86400000);
+    if (diff >= 1) S.days = Math.min(21, diff);
+  }
+  updateDateRangeLabel();
+  renderAll();
+}
+
+function closeDatePicker() {
+  const ov = document.getElementById('cal-overlay');
+  if (ov) ov.remove();
 }
 
 // ════════════════════════════════════════════
