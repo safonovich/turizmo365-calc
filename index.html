@@ -715,6 +715,17 @@ const SVC_RATES = {
   disassemble_sup:{ per: 300, ids: SUP_IDS,   unit: 'сап'   },
   wash_sup:       { per: 300, ids: SUP_IDS,   unit: 'сап'   },
 };
+// ─── Загрузка цен из AdminPanel (localStorage) ───
+(function loadAdminPrices() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('t365_admin_prices') || '{}');
+    SVCS.forEach(s => { if (saved[s.id] !== undefined) s.price = saved[s.id]; });
+    Object.keys(SVC_RATES).forEach(k => {
+      if (saved[k] !== undefined) SVC_RATES[k].per = saved[k];
+    });
+  } catch(e) {}
+})();
+
 function autoSvcPrice(svcId) {
   const r = SVC_RATES[svcId];
   if (!r) return 0;
@@ -825,7 +836,8 @@ const SVCS = [
   { id:'lager',         name:'Организация лагеря',         desc:'Палатки, шатры',               price:null, tag:'🏕' },
   { id:'wash_palatka',  name:'Мойка/сушка палатки',        desc:'При необходимости',             price:800,  tag:'🧹' },
   { id:'unload_far',   name:'Разгрузка байдарок'              , desc:'от 100 м от машины',          price:500,  tag:'📦' },
-];
+
+  { id:'custom', name:'', desc:'', price:null, tag:'✏️', isCustom:true },];
 
 // Цена транспорта (из калькулятора)
 let transportPrice = 0;
@@ -841,6 +853,7 @@ let S = {
   qty: {},
   svcs: {},
   svcPrices: {},
+  customSvcName: '',
   // Поля калькулятора доставки
   dlv: {
     addrFrom: '',   // Откуда (база/склад)
@@ -956,6 +969,12 @@ function calcAll() {
         total += ap; base += ap;
         lines.push({ name: s.name, qty: 1, price: ap });
       }
+      return;
+    }
+    // Кастомная услуга
+    if (s.isCustom) {
+      const cp = S.svcPrices['custom'] || 0;
+      if (cp > 0) { total += cp; base += cp; lines.push({ name: S.customSvcName || 'Своя услуга', qty: 1, price: cp }); }
       return;
     }
     // "Включено" services with editable price (lager, etc.)
@@ -1125,6 +1144,38 @@ function dlvCalcPanel() {
 function renderServices() {
   document.getElementById('services-list').innerHTML = SVCS.map(s => {
     const on = S.svcs[s.id];
+
+    // ── Кастомная услуга ──
+    if (s.isCustom) {
+      const curName  = S.customSvcName || '';
+      const curPrice = S.svcPrices['custom'] || '';
+      const itemHtml = `<div class="svc-item" onclick="toggleSvc('custom')">
+        <div class="svc-check ${on?'on':''}"></div>
+        <div class="svc-info">
+          <div class="svc-name">✏️ ${curName || 'Своя услуга'}</div>
+          <div class="svc-desc">${on && curPrice > 0 ? '<b style="color:var(--primary)">'+fmt(curPrice)+'</b>' : 'Введите название и цену'}</div>
+        </div>
+      </div>`;
+      const expandHtml = on ? `<div class="svc-expand" style="display:block;padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Название услуги</div>
+          <input type="text" class="dlv-input" style="width:100%;max-width:280px;"
+            placeholder="Например: Аренда весел" value="${curName}"
+            onclick="event.stopPropagation()"
+            oninput="setCustomName(this.value)">
+        </div>
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Стоимость, ₽</div>
+          <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
+            placeholder="0" value="${curPrice}"
+            onclick="event.stopPropagation()"
+            oninput="setSvcPrice('custom',this.value)">
+        </div>
+      </div>` : '';
+      return itemHtml + expandHtml;
+    }
+
+    // ── Обычные услуги ──
     let priceStr;
     if (s.hasCalc) {
       priceStr = on && transportPrice > 0
@@ -1150,7 +1201,6 @@ function renderServices() {
         <div class="svc-desc">${s.desc} — ${priceStr}</div>
       </div>
     </div>`;
-    // price input only for non-auto "Включено" services (lager etc.)
     let priceInputHtml = '';
     if (on && !s.hasCalc && !s.price && !SVC_RATES[s.id]) {
       const curVal = S.svcPrices[s.id] || '';
@@ -1165,6 +1215,11 @@ function renderServices() {
     const expandHtml = (on && s.hasCalc) ? dlvCalcPanel() : '';
     return itemHtml + priceInputHtml + expandHtml;
   }).join('');
+}
+
+function setCustomName(val) {
+  S.customSvcName = val.trim();
+  updateTotals();
 }
 
 function setSvcPrice(id, val) {
