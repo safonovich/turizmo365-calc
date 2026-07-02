@@ -1471,7 +1471,7 @@ function copyCalc() {
 
   text += `${'─'.repeat(28)}\n`;
   text += `💰 ИТОГО: ${fmt(total)}`;
-  if (savings > 0  0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
+  if (savings > 0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
 
   saveHistory();
   navigator.clipboard.writeText(text)
