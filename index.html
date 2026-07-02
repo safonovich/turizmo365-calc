@@ -484,7 +484,7 @@ body {
 
 /* ─── PRINT (КП) ─── */
 @media print {
-  @page { margin: 1.5cm; size: A4 portrait; }
+  @page { margin: 0; size: A4 portrait; }
   body > *:not(#kp-overlay) { display: none !important; }
   #kp-overlay {
     position: static !important;
@@ -495,7 +495,7 @@ body {
     box-shadow: none !important;
   }
   #kp-overlay .kp-toolbar { display: none !important; }
-  #kp-overlay > div { max-width: 100% !important; padding: 0 !important; }
+  #kp-overlay > div { max-width: 100% !important; padding: 1.5cm !important; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
@@ -1185,7 +1185,6 @@ function updateTotals() {
   document.getElementById('total-display').textContent = fmt(total);
 
   const savEl = document.getElementById('saving-label');
-  savEl.textContent = (savings > 0 && S.vip !== 'ррц') ? `Скидка: ${fmt(savings)}` : '';
 
   const daysEl = document.getElementById('days-num');
   if (daysEl) daysEl.value = S.days;
@@ -1439,7 +1438,6 @@ function copyCalc() {
   } else {
     text += `📅 Срок ${S.days} ${dayWord(S.days)}\n`;
   }
-  text += `${'✀'.repeat(28)}\n`;
 
   // Блок снаряжения
   if (equipLines.length > 0) {
@@ -1642,9 +1640,7 @@ function kpPrint() {
     `<tr><td>${l.name}${l.qty > 1 ? ' &times;' + l.qty : ''}</td><td>${l.price.toLocaleString('ru-RU')} ₽</td></tr>`
   ).join('');
 
-  const discountRow = d.savings > 0
-    ? `<tr class="disc"><td>Скидка</td><td>&minus;${d.savings.toLocaleString('ru-RU')} ₽</td></tr>`
-    : '';
+  const discountRow = '';
 
   const df = d.dateFrom ? new Date(d.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
   const dt = d.dateTo   ? new Date(d.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
