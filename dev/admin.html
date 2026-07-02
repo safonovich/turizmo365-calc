@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>TURIZMO 365 — Управление ценами</title>
+  <style>
+    :root { --bg:#f0f4f8; --card:#ffffff; --primary:#1d4ed8; --text:#1e293b; --muted:#64748b; --border:#e2e8f0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); }
+    .header { background:linear-gradient(135deg,#14532d 0%,#15803d 55%,#22c55e 100%); color:white; padding:20px 16px 16px; text-align:center; }
+    .header h1 { font-size:18px; font-weight:700; }
+    .header p  { font-size:12px; opacity:.85; margin-top:4px; }
+    .container { max-width:600px; margin:0 auto; padding:16px; }
+    .section { background:var(--card); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--border); }
+    .section-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px; }
+    .price-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); gap:12px; }
+    .price-row:last-child { border-bottom:none; padding-bottom:0; }
+    .price-label { flex:1; font-size:14px; }
+    .price-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+    .price-input { width:100px; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:15px; font-weight:600; text-align:right; color:var(--primary); outline:none; }
+    .price-input:focus { border-color:var(--primary); }
+    .btn-save { display:block; width:100%; background:linear-gradient(135deg,#14532d,#22c55e); color:white; border:none; border-radius:12px; padding:15px; font-size:16px; font-weight:700; cursor:pointer; margin-bottom:12px; }
+    .btn-back { display:block; width:100%; background:var(--card); color:var(--primary); border:1.5px solid var(--primary); border-radius:12px; padding:13px; font-size:15px; font-weight:600; cursor:pointer; text-align:center; text-decoration:none; }
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1e293b; color:white; padding:12px 24px; border-radius:24px; font-size:14px; font-weight:600; display:none; z-index:999; }
+    .toast.show { display:block; }
+    .reset-btn { font-size:12px; color:var(--muted); text-decoration:underline; background:none; border:none; cursor:pointer; margin-top:8px; }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>⚙️ Управление ценами</h1>
+  <p>TURIZMO 365 — только для Ясона</p>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">🔨 Сборка / Разборка байдарок</div>
+    <div class="price-row"><div class="price-label">Сборка байдарок<div class="price-sub">за 1 байдарку</div></div><input class="price-input" type="number" id="assemble_kd" placeholder="500"></div>
+    <div class="price-row"><div class="price-label">Разборка байдарок<div class="price-sub">за 1 байдарку</div></div><input class="price-input" type="number" id="disassemble_kd" placeholder="500"></div>
+    <div class="price-row"><div class="price-label">Мойка/сушка байдарок<div class="price-sub">за 1 байдарку</div></div><input class="price-input" type="number" id="wash_kd" placeholder="600"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">🏄 Сборка / Разборка сапбордов</div>
+    <div class="price-row"><div class="price-label">Сборка сапбордов<div class="price-sub">за 1 сап</div></div><input class="price-input" type="number" id="assemble_sup" placeholder="300"></div>
+    <div class="price-row"><div class="price-label">Разборка сапбордов<div class="price-sub">за 1 сап</div></div><input class="price-input" type="number" id="disassemble_sup" placeholder="300"></div>
+    <div class="price-row"><div class="price-label">Мойка/сушка сапбордов<div class="price-sub">за 1 сап</div></div><input class="price-input" type="number" id="wash_sup" placeholder="300"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">🧹 Прочие услуги</div>
+    <div class="price-row"><div class="price-label">Мойка/сушка палатки</div><input class="price-input" type="number" id="wash_palatka" placeholder="800"></div>
+    <div class="price-row"><div class="price-label">Мойка/сушка спальника</div><input class="price-input" type="number" id="wash_spalnyi" placeholder="600"></div>
+    <div class="price-row"><div class="price-label">Разгрузка байдарок<div class="price-sub">от 100 м от машины</div></div><input class="price-input" type="number" id="unload_far" placeholder="500"></div>
+  </div>
+  <button class="btn-save" onclick="savePrices()">💾 Сохранить цены</button>
+  <a href="index.html" class="btn-back">← Вернуться в калькулятор</a>
+  <br><button class="reset-btn" onclick="resetPrices()">Сбросить к стандартным ценам</button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  const KEY = 't365_admin_prices';
+  const DEFAULTS = { assemble_kd:500, disassemble_kd:500, wash_kd:600, assemble_sup:300, disassemble_sup:300, wash_sup:300, wash_palatka:800, wash_spalnyi:600, unload_far:500 };
+  function load() {
+    const saved = JSON.parse(localStorage.getItem(KEY)||'{}');
+    Object.keys(DEFAULTS).forEach(id => { const el=document.getElementById(id); if(el) el.value=saved[id]!==undefined?saved[id]:DEFAULTS[id]; });
+  }
+  function savePrices() {
+    const prices={};
+    Object.keys(DEFAULTS).forEach(id=>{ const el=document.getElementById(id); if(el&&el.value!=='') prices[id]=parseInt(el.value)||0; });
+    localStorage.setItem(KEY,JSON.stringify(prices));
+    toast('✅ Цены сохранены!');
+  }
+  function resetPrices() {
+    if(!confirm('Сбросить к стандартным?')) return;
+    localStorage.removeItem(KEY); load(); toast('↩️ Сброшено');
+  }
+  function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+  load();
+</script>
+</body>
+</html>
