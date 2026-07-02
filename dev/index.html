@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TURIZMO 365 — Калькулятор</title>
+<!-- PWA / iOS Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Turizmo365">
+<link rel="apple-touch-icon" href="./logo.png">
+<link rel="manifest" href="./manifest.json">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root {
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --primary: #1d4ed8;
+  --primary-light: #eff6ff;
+  --accent: #16a34a;
+  --accent-light: #f0fdf4;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --gold: #d97706;
+  --gold-light: #fffbeb;
+  --red: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  min-height: 100vh;
+  padding-bottom: 140px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: linear-gradient(135deg, #14532d 0%, #15803d 55%, #22c55e 100%);
+  color: white;
+  padding: 14px 16px 12px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 14px rgba(21,128,61,0.45);
+}
+.header-logo { height: 38px; display: block; margin: 0 auto 6px; }
+.header h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.3px; }
+.header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+/* ─── HISTORY ─── */
+.btn-history {
+  background: none; border: 1.5px solid rgba(255,255,255,0.25);
+  color: var(--text-muted); font-size: 13px; cursor: pointer;
+  padding: 5px 0; width: 100%; border-radius: 8px; margin-top: 6px;
+}
+.btn-history:active { opacity: .75; }
+.hist-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+}
+.hist-box {
+  background: white; border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 500px; max-height: 80vh;
+  display: flex; flex-direction: column;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.hist-head {
+  padding: 16px 18px 12px; display: flex; align-items: center;
+  justify-content: space-between; border-bottom: 1px solid var(--border);
+  font-weight: 700; font-size: 16px; flex-shrink: 0;
+}
+.hist-head button {
+  background: #f1f5f9; border: none; border-radius: 8px;
+  width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--text-muted);
+}
+.hist-list { overflow-y: auto; flex: 1; padding: 8px 0; }
+.hist-item {
+  padding: 12px 18px; border-bottom: 1px solid #f1f5f9;
+  cursor: pointer; display: flex; align-items: center; gap: 12px;
+}
+.hist-item:active { background: #f8fafc; }
+.hist-item-info { flex: 1; min-width: 0; }
+.hist-item-date { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+.hist-item-total { font-size: 16px; font-weight: 700; color: var(--primary); }
+.hist-item-summary { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.hist-restore { background: var(--primary-light); color: var(--primary); border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+.hist-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--card);
+  margin: 10px 12px;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── VIP SELECTOR ─── */
+.vip-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.vip-btn {
+  padding: 10px 2px 8px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.vip-btn small { font-size: 10px; font-weight: 500; display: block; color: var(--text-muted); }
+.vip-btn.active {
+  border-color: var(--gold);
+  background: var(--gold-light);
+  color: var(--gold);
+}
+.vip-btn.active small { color: var(--gold); }
+.vip-btn:first-child.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.vip-btn:first-child.active small { color: var(--primary); }
+
+/* ─── DAYS ─── */
+.days-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: center;
+}
+.btn-circle {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 26px;
+  font-weight: 300;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+  line-height: 1;
+}
+.btn-circle:active { background: #dbeafe; }
+.days-center {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+.days-big {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+.days-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.days-rate-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+}
+.warn-box {
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #c2410c;
+  margin-top: 12px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.warn-box.show { display: flex; }
+
+/* ─── CATEGORY TABS ─── */
+.cat-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.cat-tab.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+/* ─── EQUIPMENT ITEMS ─── */
+.eq-section { display: none; }
+.eq-section.show { display: block; }
+
+.eq-item {
+  display: flex;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.eq-item:last-child { border-bottom: none; padding-bottom: 0; }
+.eq-info { flex: 1; min-width: 0; }
+.eq-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.eq-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.eq-price { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 3px; }
+.eq-price.vip { color: var(--gold); }
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.qty-btn {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  border: 1.5px solid #1d4ed8;
+  background: #ffffff;
+  font-size: 20px;
+  font-weight: 400;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #1d4ed8;
+  transition: all 0.1s;
+  line-height: 1;
+}
+.qty-btn.minus:active, .qty-btn.plus:active { background: var(--primary-light); border-color: var(--primary); }
+.qty-num {
+  width: 44px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  border: none;
+  background: transparent;
+  -moz-appearance: textfield;
+  outline: none;
+  padding: 0;
+}
+.qty-num::-webkit-inner-spin-button,
+.qty-num::-webkit-outer-spin-button { -webkit-appearance: none; }
+.qty-num.has-qty { color: var(--primary); }
+.days-big-input {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: center;
+  width: 80px;
+  border: none;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+  line-height: 1;
+  display: block;
+  margin: 0 auto;
+}
+.days-big-input::-webkit-inner-spin-button,
+.days-big-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.date-input {
+  width: 100% !important;
+  font-size: 14px !important;
+  padding: 8px 10px !important;
+}
+
+/* ─── SERVICES ─── */
+.svc-item {
+  display: flex;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  cursor: pointer;
+}
+.svc-item:last-child { border-bottom: none; }
+.svc-check {
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.svc-check.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.svc-check.on::after { content: '✓'; font-size: 14px; font-weight: 700; }
+.svc-info { flex: 1; }
+.svc-name { font-size: 14px; font-weight: 600; }
+.svc-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── BREAKDOWN ─── */
+.breakdown {
+  margin: 0 12px 10px;
+  background: white;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.breakdown-header {
+  padding: 14px 16px 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+}
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.breakdown-item:last-child { border-bottom: none; }
+.breakdown-item .bn { color: var(--text-muted); flex: 1; padding-right: 8px; }
+.breakdown-item .bp { font-weight: 700; white-space: nowrap; }
+.breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--primary-light);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--primary);
+}
+
+/* ─── STICKY TOTAL ─── */
+.sticky-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  padding: 12px 16px 16px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+  z-index: 100;
+}
+.sticky-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.sticky-label { font-size: 13px; color: var(--text-muted); }
+.sticky-saving {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.sticky-total {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1;
+}
+.btn-copy {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--primary), #1e40af);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(29,78,216,0.35);
+  transition: opacity 0.15s;
+}
+.btn-copy:active { opacity: 0.88; }
+.btn-kp {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+  transition: opacity 0.15s;
+  margin-top: 8px;
+}
+.btn-kp:active { opacity: 0.88; }
+.btn-reset {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─── DATE RANGE PICKER ─── */
+.date-range-btn {
+  width:100%; padding:11px 14px; border:1.5px solid var(--border);
+  border-radius:12px; background:var(--primary-light); color:var(--primary);
+  font-size:14px; font-weight:600; cursor:pointer; display:flex;
+  justify-content:space-between; align-items:center; margin-bottom:14px; text-align:left;
+}
+.date-range-btn:active { opacity:.8; }
+.cal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.cal-box {
+  background:white; border-radius:20px 20px 0 0; padding:20px 16px;
+  width:100%; max-width:440px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-nav {
+  background:var(--primary-light); border:none; color:var(--primary);
+  font-size:18px; width:36px; height:36px; border-radius:10px; cursor:pointer; font-weight:700;
+}
+.cal-month-title { font-weight:700; font-size:15px; text-align:center; }
+.cal-hint { font-size:11px; color:var(--text-muted); text-align:center; margin-top:2px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-top:6px; }
+.cal-dow { text-align:center; font-size:11px; font-weight:700; color:var(--text-muted); padding:4px 0; }
+.cal-day {
+  text-align:center; padding:9px 2px; border-radius:8px;
+  cursor:pointer; font-size:14px; line-height:1; user-select:none;
+}
+.cal-day.empty { cursor:default; }
+.cal-day:not(.empty):hover { background:var(--primary-light); }
+.cal-day.today { font-weight:700; outline:1.5px solid var(--primary); outline-offset:-1px; border-radius:8px; }
+.cal-day.start,.cal-day.end { background:var(--primary) !important; color:white !important; font-weight:700; }
+.cal-day.in-range { background:var(--primary-light); color:var(--primary); }
+
+/* ─── PRINT (КП) ─── */
+@media print {
+  @page { margin: 1.5cm; size: A4 portrait; }
+  body > *:not(#kp-overlay) { display: none !important; }
+  #kp-overlay {
+    position: static !important;
+    overflow: visible !important;
+    background: white !important;
+    height: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
+  #kp-overlay .kp-toolbar { display: none !important; }
+  #kp-overlay > div { max-width: 100% !important; padding: 0 !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ─── DELIVERY CALC ─── */
+.svc-expand {
+  display: none;
+  background: #f0f4f8;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 4px 0 8px 36px;
+}
+.svc-expand.show { display: block; }
+.svc-expand-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+.dlv-label { color: #1e293b !important; }
+.dlv-result-row .rn { color: #64748b !important; }
+.dlv-result-row .rv { color: #1e293b !important; font-weight: 600; }
+.dlv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.dlv-label {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.3;
+}
+.dlv-input {
+  width: 90px;
+  padding: 8px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: right;
+  background: #ffffff;
+  color: #1d4ed8;
+  outline: none;
+  flex-shrink: 0;
+}
+.dlv-input:focus { border-color: #1d4ed8; }
+.dlv-input.small { width: 70px; }
+.dlv-input[type="text"] { width: 100%; text-align: left; font-size: 13px; font-weight: 500; color: #1e293b; }
+.btn-route {
+  width: 100%; margin: 8px 0 4px;
+  background: var(--primary); color: white;
+  border: none; border-radius: 12px;
+  padding: 11px; font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.3px;
+}
+.btn-route:disabled { opacity: 0.6; cursor: wait; }
+.dlv-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
+}
+.dlv-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 3px 0;
+}
+.dlv-result-row .rn { color: var(--text-muted); }
+.dlv-result-row .rv { font-weight: 700; color: var(--text); }
+.dlv-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+.dlv-total-row .tn { font-weight: 700; color: var(--primary); font-size: 13px; }
+.dlv-total-row .tv { font-weight: 900; color: var(--primary); font-size: 17px; }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: #1e293b;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  z-index: 999;
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <img src="./logo.png" class="header-logo" onerror="this.style.display='none'" alt="">
+  <h1>TURIZMO 365</h1>
+  <p>Внутренний калькулятор аренды</p>
+</div>
+
+<!-- VIP LEVEL -->
+<div class="card">
+  <div class="card-title">⭐ Уровень клиента</div>
+  <div class="vip-row">
+    <button class="vip-btn active" data-vip="ррц" onclick="setVip(this)">РРЦ<small>Стандарт</small></button>
+    <button class="vip-btn" data-vip="vip1" onclick="setVip(this)">VIP1<small>−5%</small></button>
+    <button class="vip-btn" data-vip="vip2" onclick="setVip(this)">VIP2<small>−15%</small></button>
+    <button class="vip-btn" data-vip="vip3" onclick="setVip(this)">VIP3<small>−20%</small></button>
+    <button class="vip-btn" data-vip="vip4" onclick="setVip(this)">VIP4<small>−25%</small></button>
+  </div>
+</div>
+
+<!-- DAYS + DATES -->
+<div class="card">
+  <div class="card-title">📅 Даты и срок аренды</div>
+  <button class="date-range-btn" onclick="openDatePicker()">
+    <span id="date-range-label">📅 Выбрать даты аренды</span>
+    <span>›</span>
+  </button>
+  <div class="days-row">
+    <button class="btn-circle" onclick="changeDays(-1)">−</button>
+    <div class="days-center">
+      <input type="number" class="days-big-input" id="days-num" value="1" min="1" max="21"
+        oninput="setDaysManual(this.value)">
+      <div class="days-label">суток</div>
+      <div class="days-rate-badge" id="rate-badge">Стандартный тариф</div>
+    </div>
+    <button class="btn-circle" onclick="changeDays(1)">+</button>
+  </div>
+  <div class="warn-box" id="warn-weekend">
+    ⚠️ В выходные/праздники — минимум 3 суток
+  </div>
+</div>
+
+<!-- EQUIPMENT -->
+<div class="card">
+  <div class="card-title">⛺ Снаряжение</div>
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="setCat('splav', this)">🚣 Сплавы</button>
+    <button class="cat-tab" onclick="setCat('kemping', this)">🏕 Кемпинг</button>
+    <button class="cat-tab" onclick="setCat('acc', this)">🎒 Аксессуары</button>
+  </div>
+  <div id="sec-splav" class="eq-section show"></div>
+  <div id="sec-kemping" class="eq-section"></div>
+  <div id="sec-acc" class="eq-section"></div>
+</div>
+
+<!-- SERVICES -->
+<div class="card">
+  <div class="card-title">🔧 Услуги и доп. расходы</div>
+  <div id="services-list"></div>
+</div>
+
+<!-- BREAKDOWN -->
+<div class="breakdown" id="breakdown" style="display:none"></div>
+
+<!-- STICKY TOTAL -->
+<div class="sticky-bar">
+  <div class="sticky-row">
+    <div>
+      <div class="sticky-label">Итого к оплате</div>
+      <div class="sticky-saving" id="saving-label"></div>
+    </div>
+    <div class="sticky-total" id="total-display">0 ₽</div>
+  </div>
+  <button class="btn-copy" id="btn-copy-html" onclick="copyCalc()">📋 Скопировать расчёт</button>
+  <button class="btn-kp" id="btn-kp-html" onclick="generateKP()">📄 Сформировать КП</button>
+  <div style="text-align:center;margin-top:8px">
+    <button class="btn-reset" onclick="resetAll()">Сбросить всё</button>
+  </div>
+  <button class="btn-history" onclick="openHistory()">📜 История расчётов</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  ДАННЫЕ
+// ════════════════════════════════════════════
+
+// VIP скидки по категории
+const DISC = {
+  boats:   { ррц:0, vip1:.05, vip2:.15, vip3:.20, vip4:.25 },
+  acc:     { ррц:0, vip1:.05, vip2:.15, vip3:.25, vip4:.35 },
+  kemping: { ррц:0, vip1:.05, vip2:.15, vip3:.20, vip4:.30 },
+};
+
+// ЛОДКИ — [цена 1д, 2д, 3д, 4д, 5д, 6д, 7д, тариф 8-14д/сут, тариф 15-21д/сут]
+// null = цена не указана отдельно, используется rate5plus
+// ─── Категории лодок для расчёта услуг ───
+const SUP_IDS  = new Set(['sup_std','sup_tan','sup_pre']);
+const KBOAT_IDS = new Set(['shuya3','shuya2','shuya1','luga3','raft','packraft']);
+// Ставки услуг в ₽ за 1 единицу (байдарка / сап)
+const SVC_RATES = {
+  assemble_kd:    { per: 500, ids: KBOAT_IDS, unit: 'байд.' },
+  disassemble_kd: { per: 500, ids: KBOAT_IDS, unit: 'байд.' },
+  wash_kd:        { per: 600, ids: KBOAT_IDS, unit: 'байд.' },
+  assemble_sup:   { per: 300, ids: SUP_IDS,   unit: 'сап'   },
+  disassemble_sup:{ per: 300, ids: SUP_IDS,   unit: 'сап'   },
+  wash_sup:       { per: 300, ids: SUP_IDS,   unit: 'сап'   },
+};
+// ─── Загрузка цен из AdminPanel (localStorage) ───
+(function loadAdminPrices() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('t365_admin_prices') || '{}');
+    SVCS.forEach(s => { if (saved[s.id] !== undefined) s.price = saved[s.id]; });
+    Object.keys(SVC_RATES).forEach(k => {
+      if (saved[k] !== undefined) SVC_RATES[k].per = saved[k];
+    });
+  } catch(e) {}
+})();
+
+function autoSvcPrice(svcId) {
+  const r = SVC_RATES[svcId];
+  if (!r) return 0;
+  let n = 0;
+  BOATS.forEach(b => { if (r.ids.has(b.id)) n += (S.qty[b.id] || 0); });
+  return n * r.per;
+}
+
+const BOATS = [
+  {
+    id:'shuya3', cat:'boats',
+    name:'Байдарка Шуя-3',
+    sub:'3-местная КНБ + рюкзак + ремкомплект',
+    prices:[3500,4500,5300,5400,5500,5600,5700],
+    rate8_14:820, rate15_21:800
+  },
+  {
+    id:'shuya2', cat:'boats',
+    name:'Байдарка Шуя-2',
+    sub:'2-местная КНБ + рюкзак + ремкомплект',
+    prices:[3000,4000,4700,4900,5000,5100,5200],
+    rate8_14:700, rate15_21:650
+  },
+  {
+    id:'shuya1', cat:'boats',
+    name:'Байдарка Шуя-1',
+    sub:'1-местная КНБ + рюкзак + ремкомплект',
+    prices:[2500,3500,4000,4200,4300,4400,4500],
+    rate8_14:600, rate15_21:570
+  },
+  {
+    id:'luga3', cat:'boats',
+    name:'Байдарка Луга-3',
+    sub:'3-местная НБ + рюкзак + ремкомплект',
+    prices:[3000,4000,4700,4900,5000,5100,5200],
+    rate8_14:700, rate15_21:650
+  },
+  {
+    id:'raft', cat:'boats',
+    name:'Рафт "Планета Вода 450"',
+    sub:'Рафт + ремкомплект + чехол',
+    prices:[5000,6000,6600,6700,6800,6900,7000],
+    rate8_14:1000, rate15_21:900
+  },
+  {
+    id:'packraft', cat:'boats',
+    name:'Пакрафт одноместный',
+    sub:'Пакрафт + ремкомплект + чехол',
+    prices:[2000,3500,4000,4200,4300,4400,4500],
+    rate8_14:600, rate15_21:570
+  },
+  {
+    id:'sup_std', cat:'boats',
+    name:'Сапборд СТАНДАРТ',
+    sub:'САП + весло + гермомешок 5ЃB쀬�FF;B�B�B�B耬�B�B�F ���B�B�FB�F��(�����ɥ����l��������������������9ձ���ձ���ձ�t�(����Ʌє�����������Ʌє�|���ձ���Ʌє��|���ձ�(����(���(����������}х�������蝉���̜�(���������B�B�B�B�B�FBЃB�BCBwBSB{Bp��(�����Ո�B�BCB|���ȃB�B�FB�B����ȃB�B�FB�B�B�B�F#B�B����FF;B�B�B�B耬�B�B�F ���B�B�FB�F��(�����ɥ����l���������������������ձ���ձ���ձ�t�(����Ʌє�����������Ʌє�|���ձ���Ʌє��|���ձ�(����(���(����������}�ɔ������蝉���̜�(���������B�B�B�B�B�FBЃBBРЕМИУМ',
+    sub:'САП + весло + гермомешок 5л + рюкзак + лиш + насос',
+    prices:[3000,4500,5500,6500,null,null,null],
+    rate5plus:1500, rate8_14:null, rate15_21:null
+  },
+];
+
+// АКСЕССУАРЫ — цена за 7 дней аренды (РРЦ) / flat rate до 7 дней
+const ACCS = [
+  { id:'veslo',    cat:'acc', name:'Весло байдарочное',           price7:300  },
+  { id:'zinlet',   cat:'acc', name:'Спас жилет',                   price7:300  },
+  { id:'germe80',  cat:'acc', name:'Гермомешок 80л',              price7:300  },
+  { id:'nasos',    cat:'acc', name:'Насос лягушка',               price7:300  },
+  { id:'shlem',    cat:'acc', name:'Шлем',                        price7:300  },
+  { id:'racia',    cat:'acc', name:'Рация',                       price7:500  },
+  { id:'fartuk3',  cat:'acc', name:'Фартук + юбки Ш3',  sub:'Оля Шуя-3', price7:1500 },
+  { id:'fartuk2',  cat:'acc', name:'Фартук + юбки К2',  sub:'Оля Шуя-2', price7:1300 },
+  { id:'fartuk1',  cat:'acc', name:'Фартук + юбка К1',  sub:'Оля Шуя-1', price7:1000 },
+  { id:'nasos_el', cat:'acc', name:'Насос электрический аккум.',  price7:600  },
+  { id:'germe10',  cat:'acc', name:'Гермомешки 10л',              price7:200  },
+];
+
+// КЕМПИНГ — Іена за н дней `ренды РРЦ)
+const KEMP = [
+  { id:'palatka',    cat:'kemping', name:'Палатка 3-4х местная',          price7:1500 },
+  { id:'ryukzak',    cat:'kemping', name:'Рюкзак туристический',          price7:1500 },
+  { id:'spalnyi',    cat:'kemping', name:'Спальный мешок',                price7:750  },
+  { id:'vkladysh',   cat:'kemping', name:'Вкладыш  спальниъ',            price7:200  },
+  { id:'penka_sn',   cat:'kemping', name:'Пенка (коврик для с2na)',        price7:250  },
+  { id:'penka_sid',  cat:'kemping', name:'Пенка (коврик для сидения)',    price7:200  },
+  { id:'kovrik1',    cat:'kemping', name:'Коврик самонадувной 1-местный', price7:500  },
+  { id:'kovrik2',    cat:'kemping', name:'Коврик самонадувной 2-местный', price7:800  },
+  { id:'banya',      cat:'kemping', name:'Баня МОБИБА МА-10 М3', sub:'Шатёр + печка + защита от искр', price7:5000 },
+  { id:'dush',       cat:'kemping', name:'Палатка-душ',                   price7:600  },
+  { id:'tent34',     cat:'kemping', name:'Тент 3×4',                      price7:1500 },
+  { id:'shatyr33',   cat:'kemping', name:'Шатёр 3×3 + три стенки',       price7:3500 },
+  { id:'stol',       cat:'kemping', name:'Стол туристический складной',   price7:500  },
+  { id:'stul',       cat:'kemping', name:'Стул туристический складной',   price7:300  },
+  { id:'kan',        cat:'kemping', name:'Кан 0–12л',                     price7:300  },
+  { id:'gorelka',    cat:'kemping', name:'Горелка газовая',               price7:300  },
+  { id:'taburetka',  cat:'kemping', name:'Табуретка складная',            price7:200  },
+  { id:'umyvalnik',  cat:'kemping', name:'Умывальник',                    price7:450  },
+];
+
+// УСЛУГИ
+const SVCS = [
+  { id:'transport',       name:'Доставка / Забор снаряжения', desc:'Расчёт по адресу и маршруту', price:null, tag:'🚚', hasCalc:true },
+  { id:'assemble_kd',    name:'Сборка байдарок',            desc:'500₽ / байдарка',              price:null, tag:'🔨' },
+  { id:'disassemble_kd', name:'Разборка байдарок',          desc:'500₽ / байдарка',              price:null, tag:'🔧' },
+  { id:'wash_kd',        name:'Мойка/сушка байдарок',       desc:'600₽ / байдарка',              price:null, tag:'🚿' },
+  { id:'assemble_sup',   name:'Сборка сапбордов',           desc:'300₽ / сап',                   price:null, tag:'🔨' },
+  { id:'disassemble_sup',name:'Разборка сапбордов',         desc:'300₽ / сап',                   price:null, tag:'🔧' },
+  { id:'wash_sup',       name:'Мойка/сушка сапбордов',      desc:'300₽ / сап',                   price:null, tag:'🚿' },
+  { id:'lager',         name:'Организация лагеря',         desc:'Палатки, шатры',               price:null, tag:'🏕' },
+  { id:'wash_palatka',  name:'Мойка/сушка палатки',        desc:'При необходимости',             price:800,  tag:'🧹' },
+  { id:'unload_far',   name:'Разгрузка байдарок'              , desc:'от 100 м от машины',          price:500,  tag:'📦' },
+
+  { id:'custom', name:'', desc:'', price:null, tag:'✏️', isCustom:true },];
+
+// Цена транспорта (из калькулятора)
+let transportPrice = 0;
+
+// ════════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ════════════════════════════════════════════
+let S = {
+  vip: 'ррц',
+  days: 1,
+  dateFrom: '',
+  dateTo: '',
+  qty: {},
+  svcs: {},
+  svcPrices: {},
+  customSvcName: '',
+  // Поля калькулятора доставки
+  dlv: {
+    addrFrom: '',   // Откуда (база/склад)
+    addrTo: '',     // Куда (адрес клиента)
+    km: 0,          // км в одну сторону
+    kmManual: false,// вручную введено
+    fuelPrice: 74,  // р/л
+    fuelRate: 10,   // л/100 км (удобный формат!)
+    amort: 3.8,     // р/км амортизация
+    salary: 6000,   // р/день водителя
+    driverDays: 1,  // дней (1 = только доставка, 2 = + забор)
+    withPickup: false, // включить забор
+    margin: 60,     // наценка %
+  },
+  dlvResult: null,
+};
+
+// ════════════════════════════════════════════
+//  РАСЧЁТ ЦЕН
+// ════════════════════════════════════════════
+function boatPrice(boat, days) {
+  if (days >= 1 && days <= 7) {
+    const p = boat.prices[days - 1];
+    if (p !== null && p !== undefined) return p;
+    // SAP с 5+ тарифом
+    if (boat.rate5plus) {
+      const base4 = boat.prices[3];
+      return base4 + (days - 4) * boat.rate5plus;
+    }
+    return boat.prices[6] || boat.prices[boat.prices.length - 1];
+  }
+  if (days >= 8 && days <= 14) {
+    if (boat.rate8_14) return days * boat.rate8_14;
+    if (boat.rate5plus) return boat.prices[3] + (days - 4) * boat.rate5plus;
+  }
+  if (days >= 15 && days <= 21) {
+    if (boat.rate15_21) return days * boat.rate15_21;
+    if (boat.rate5plus) return boat.prices[3] + (days - 4) * boat.rate5plus;
+  }
+  // Fallback
+  if (boat.rate5plus) return boat.prices[3] + (days - 4) * boat.rate5plus;
+  const rateDay = (boat.rate15_21 || boat.rate8_14 || boat.prices[6] / 7);
+  return Math.round(days * rateDay);
+}
+
+function accPrice(item, days) {
+  // flat за ≤7 дней, пропорционально сверх
+  if (days <= 7) return item.price7;
+  return Math.round(item.price7 / 7 * days);
+}
+
+function kempPrice(item, days) {
+  if (days <= 7) return item.price7;
+  return Math.round(item.price7 / 7 * days);
+}
+
+function applyDisc(price, cat) {
+  const d = (DISC[cat] || DISC.boats)[S.vip] || 0;
+  return Math.round(price * (1 - d));
+}
+
+function calcAll() {
+  let total = 0, base = 0;
+  const lines = [];
+
+  BOATS.forEach(b => {
+    const qty = S.qty[b.id] || 0;
+    if (!qty) return;
+    const bp = boatPrice(b, S.days);
+    const vp = applyDisc(bp, 'boats');
+    base += bp * qty;
+    total += vp * qty;
+    lines.push({ name: b.name, qty, price: vp * qty });
+  });
+
+  ACCS.forEach(a => {
+    const qty = S.qty[a.id] || 0;
+    if (!qty) return;
+    const bp = accPrice(a, S.days);
+    const vp = applyDisc(bp, 'acc');
+    base += bp * qty;
+    total += vp * qty;
+    lines.push({ name: a.name, qty, price: vp * qty });
+  });
+
+  KEMP.forEach(k => {
+    const qty = S.qty[k.id] || 0;
+    if (!qty) return;
+    const bp = kempPrice(k, S.days);
+    const vp = applyDisc(bp, 'kemping');
+    base += bp * qty;
+    total += vp * qty;
+    lines.push({ name: k.name, qty, price: vp * qty });
+  });
+
+  SVCS.forEach(s => {
+    if (!S.svcs[s.id]) return;
+    if (s.hasCalc) {
+      if (transportPrice > 0) { total += transportPrice; base += transportPrice; lines.push({ name: s.name, qty:1, price: transportPrice }); }
+      return;
+    }
+    // services with a fixed price (wash_palatka, wash_spalnyi)
+    if (s.price) {
+      total += s.price;
+      base += s.price;
+      lines.push({ name: s.name, qty: 1, price: s.price });
+      return;
+    }
+    // auto-calculated per-unit services (assembly/wash kayaks & SUPs)
+    if (SVC_RATES[s.id]) {
+      const ap = autoSvcPrice(s.id);
+      if (ap > 0) {
+        total += ap; base += ap;
+        lines.push({ name: s.name, qty: 1, price: ap });
+      }
+      return;
+    }
+    // Кастомная услуга
+    if (s.isCustom) {
+      const cp = S.svcPrices['custom'] || 0;
+      if (cp > 0) { total += cp; base += cp; lines.push({ name: S.customSvcName || 'Своя услуга', qty: 1, price: cp }); }
+      return;
+    }
+    // "Включено" services with editable price (lager, etc.)
+    const ep = S.svcPrices[s.id] || 0;
+    if (ep > 0) {
+      total += ep;
+      base += ep;
+      lines.push({ name: s.name, qty: 1, price: ep });
+    }
+  });
+
+  return { total, savings: base - total, lines };
+}
+
+// ════════════════════════════════════════════
+//  ФОРМАТИРОВАНИЕ
+// ════════════════════════════════════════════
+function fmt(n) {
+  return n.toLocaleString('ru-RU') + ' ₽';
+}
+
+function rateLabel(days) {
+  if (days <= 7) return `Тариф: фикс за ${days} сут.`;
+  if (days <= 14) return 'Тариф: 8–14 дней (р/сутки)';
+  return 'Тариф: 15–21 день (р/сутки)';
+}
+
+function vipLabel(v) {
+  return { ррц:'РРЦ (стандарт)', vip1:'VIP1 (−5%)', vip2:'VIP2 (−15%)', vip3:'VIP3 (−20%)', vip4:'VIP4 (−25%)' }[v];
+}
+
+// ════════════════════════════════════════════
+//  РЕНДЕР
+// ════════════════════════════════════════════
+function renderSection(items, secId, priceFn, discCat) {
+  const el = document.getElementById(secId);
+  el.innerHTML = items.map(item => {
+    const qty = S.qty[item.id] || 0;
+    const bp = priceFn(item, S.days);
+    const vp = applyDisc(bp, discCat);
+    const isVip = S.vip !== 'ррц';
+    const priceStr = isVip
+      ? `<span style="text-decoration:line-through;color:#cbd5e1;font-weight:400">${fmt(bp)}</span> → ${fmt(vp)}`
+      : fmt(vp);
+    return `<div class="eq-item">
+      <div class="eq-info">
+        <div class="eq-name">${item.name}</div>
+        ${item.sub ? `<div class="eq-sub">${item.sub}</div>` : ''}
+        <div class="eq-price ${isVip?'vip':''}">${priceStr} / ${S.days} сут.</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn minus" onclick="chQty('${item.id}',-1)">−</button>
+        <input type="number" class="qty-num ${qty?'has-qty':''}" id="qn-${item.id}"
+          value="${qty}" min="0" max="99"
+          onclick="event.stopPropagation()"
+          oninput="setQtyDirect('${item.id}',this.value)">
+        <button class="qty-btn plus" onclick="chQty('${item.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Панель расчёта транспорта ───
+function dlvCalcPanel() {
+  const d = S.dlv;
+  const r = S.dlvResult;
+
+  const kmDisplay = d.km > 0 ? `${d.km} км` : '—';
+
+  const resultHtml = r ? `
+    <hr class="dlv-divider">
+    <div class="dlv-result-row"><span class="rn">Стоимость 1 км</span><span class="rv">${fmt2(r.costPerKm)} р/км</span></div>
+    <div class="dlv-result-row"><span class="rn">Маршрут (${d.km} км × ${d.withPickup?4:2})</span><span class="rv">${fmt(r.tripCost)}</span></div>
+    <div class="dlv-result-row"><span class="rn">ЗП водителя (${d.driverDays} дн.)</span><span class="rv">${fmt(r.salaryTotal)}</span></div>
+    <div class="dlv-result-row"><span class="rn">Себестоимость</span><span class="rv">${fmt(r.cost)}</span></div>
+    <div class="dlv-result-row"><span class="rn">Прибыль (${d.margin}%)</span><span class="rv">${fmt(r.profit)}</span></div>
+    <div class="dlv-total-row">
+      <span class="tn">💰 Итого за транспорт</span>
+      <span class="tv">${fmt(r.total)}</span>
+    </div>` : (d.km > 0 ? `<div style="text-align:center;padding:10px;color:var(--text-muted);font-size:13px">Заполните адреса выше</div>` : '');
+
+  return `<div class="svc-expand show">
+    <div class="svc-expand-title">🚚 Расчёт транспорта</div>
+
+    <!-- Адреса -->
+    <div class="dlv-row" style="flex-direction:column;align-items:stretch;gap:6px">
+      <div class="dlv-label" style="font-weight:600">📍 Откуда (база/склад)</div>
+      <div style="display:flex;gap:6px">
+        <input id="dlv-from" class="dlv-input" style="width:100%;font-size:13px;font-weight:500;color:var(--text)"
+          type="text" placeholder="Москва, ул. Примерная 1" value="${d.addrFrom}"
+          oninput="S.dlv.addrFrom=this.value">
+      </div>
+    </div>
+    <div class="dlv-row" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:4px">
+      <div class="dlv-label" style="font-weight:600">📍 Куда (клиент)</div>
+      <div style="display:flex;gap:6px">
+        <input id="dlv-to" class="dlv-input" style="width:100%;font-size:13px;font-weight:500;color:var(--text)"
+          type="text" placeholder="Адрес старта маршрута" value="${d.addrTo}"
+          oninput="S.dlv.addrTo=this.value">
+      </div>
+    </div>
+    <button class="btn-route" onclick="calcRoute()" id="btn-route">
+      🗺 Рассчитать маршрут
+    </button>
+    <div id="route-status" style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:4px"></div>
+
+    <!-- Разделитель -->
+    <div style="display:flex;align-items:center;gap:8px;margin:12px 0 10px">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">или введите км вручную</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+
+    <div class="dlv-row">
+      <div class="dlv-label">📏 Км в одну сторону</div>
+      <input class="dlv-input" type="number" value="${d.km||''}" min="1" placeholder="0"
+        oninput="setDlvField('km',this.value)">
+    </div>
+
+    <!-- Включить забор -->
+    <div class="svc-item" style="margin:4px 0 2px" onclick="togglePickup()">
+      <div class="svc-check ${d.withPickup?'on':''}"></div>
+      <div class="svc-info">
+        <div class="svc-name" style="font-size:13px">Включить забор снаряжения</div>
+        <div class="svc-desc">+1 день водителя, ×4 плеча вместп ×2</div>
+      </div>
+    </div>
+
+    <hr class="dlv-divider">
+
+    <!-- Параметры авто/водителя -->
+    <div class="dlv-row">
+      <div class="dlv-label">⛽ Цена топлива (р/л)</div>
+      <input class="dlv-input small" type="number" value="${d.fuelPrice}" min="1"
+        oninput="setDlvField('fuelPrice',this.value)">
+    </div>
+    <div class="dlv-row">
+      <div class="dlv-label">Расход авто (л/100 км)</div>
+      <input class="dlv-input small" type="number" value="${d.fuelRate}" step="0.5" min="1"
+        oninput="setDlvField('fuelRate',this.value)">
+    </div>
+    <div class="dlv-row">
+      <div class="dlv-label">Амортизация (р/км)</div>
+      <input class="dlv-input small" type="number" value="${d.amort}" step="0.1" min="0"
+        oninput="setDlvField('amort',this.value)">
+    </div>
+    <div class="dlv-row">
+      <div class="dlv-label">👤 ЗП водителя (р/день)</div>
+      <input class="dlv-input" type="number" value="${d.salary}" min="0"
+        oninput="setDlvField('salary',this.value)">
+    </div>
+    <div class="dlv-row">
+      <div class="dlv-label">Водитель (дней)</div>
+      <input class="dlv-input small" type="number" value="${d.driverDays}" min="1"
+        oninput="setDlvField('driverDays',this.value)">
+    </div>
+    <div class="dlv-row">
+      <div class="dlv-label">Наценка компании (%)</div>
+      <input class="dlv-input small" type="number" value="${d.margin}" min="0" max="300"
+        oninput="setDlvField('margin',this.value)">
+    </div>
+
+    ${resultHtml}
+  </div>`;
+}
+
+function renderServices() {
+  document.getElementById('services-list').innerHTML = SVCS.map(s => {
+    const on = S.svcs[s.id];
+
+    // ── Кастомная услуга ──
+    if (s.isCustom) {
+      const curName  = S.customSvcName || '';
+      const curPrice = S.svcPrices['custom'] || '';
+      const itemHtml = `<div class="svc-item" onclick="toggleSvc('custom')">
+        <div class="svc-check ${on?'on':''}"></div>
+        <div class="svc-info">
+          <div class="svc-name">✏️ ${curName || 'Своя услуга'}</div>
+          <div class="svc-desc">${on && curPrice > 0 ? '<b style="color:var(--primary)">'+fmt(curPrice)+'</b>' : 'Введите название и цену'}</div>
+        </div>
+      </div>`;
+      const expandHtml = on ? `<div class="svc-expand" style="display:block;padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Название услуги</div>
+          <input type="text" class="dlv-input" style="width:100%;max-width:280px;"
+            placeholder="Например: Аренда весел" value="${curName}"
+            onclick="event.stopPropagation()"
+            oninput="setCustomName(this.value)">
+        </div>
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Стоимость, ₽</div>
+          <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
+            placeholder="0" value="${curPrice}"
+            onclick="event.stopPropagation()"
+            oninput="setSvcPrice('custom',this.value)">
+        </div>
+      </div>` : '';
+      return itemHtml + expandHtml;
+    }
+
+    // ── Обычные услуги ──
+    let priceStr;
+    if (s.hasCalc) {
+      priceStr = on && transportPrice > 0
+        ? `<b style="color:var(--primary)">${fmt(transportPrice)}</b>`
+        : (on ? 'Введите адреса ниже' : 'Включить для расчёта');
+    } else if (s.price) {
+      priceStr = fmt(s.price);
+    } else if (SVC_RATES[s.id]) {
+      const ap = autoSvcPrice(s.id);
+      const r = SVC_RATES[s.id];
+      let n = 0; BOATS.forEach(b => { if (r.ids.has(b.id)) n += (S.qty[b.id]||0); });
+      priceStr = ap > 0
+        ? `<b style="color:var(--primary)">${fmt(ap)}</b> <span style="font-size:11px;color:#94a3b8;">(${n} ${r.unit} × ${r.per}₽)</span>`
+        : `${r.per}₽ / ${r.unit}`;
+    } else {
+      const ep = S.svcPrices[s.id] || 0;
+      priceStr = ep > 0 ? `<b style="color:var(--primary)">${fmt(ep)}</b>` : 'Включено';
+    }
+    const itemHtml = `<div class="svc-item" onclick="toggleSvc('${s.id}')">
+      <div class="svc-check ${on?'on':''}"></div>
+      <div class="svc-info">
+        <div class="svc-name">${s.tag} ${s.name}</div>
+        <div class="svc-desc">${s.desc} — ${priceStr}</div>
+      </div>
+    </div>`;
+    let priceInputHtml = '';
+    if (on && !s.hasCalc && !s.price && !SVC_RATES[s.id]) {
+      const curVal = S.svcPrices[s.id] || '';
+      priceInputHtml = `<div class="svc-expand" style="display:block;padding:10px 14px 12px;">
+        <div class="dlv-label" style="font-size:12px;margin-bottom:6px;">Стоимость услуги, ₽</div>
+        <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
+          placeholder="0" value="${curVal}"
+          onclick="event.stopPropagation()"
+          oninput="setSvcPrice('${s.id}',this.value)">
+      </div>`;
+    }
+    const expandHtml = (on && s.hasCalc) ? dlvCalcPanel() : '';
+    return itemHtml + priceInputHtml + expandHtml;
+  }).join('');
+}
+
+function setCustomName(val) {
+  S.customSvcName = val.trim();
+  updateTotals();
+}
+
+function setSvcPrice(id, val) {
+  S.svcPrices[id] = parseInt(val) || 0;
+  updateTotals();
+}
+
+function renderAll() {
+  renderSection(BOATS, 'sec-splav', boatPrice, 'boats');
+  renderSection(ACCS, 'sec-acc', accPrice, 'acc');
+  renderSection(KEMP, 'sec-kemping', kempPrice, 'kemping');
+  renderServices();
+  updateTotals();
+}
+
+function updateTotals() {
+  const { total, savings, lines } = calcAll();
+  document.getElementById('total-display').textContent = fmt(total);
+
+  const savEl = document.getElementById('saving-label');
+  savEl.textContent = (savings > 0 && S.vip !== 'ррц') ? `Скидка: ${fmt(savings)}` : '';
+
+  const daysEl = document.getElementById('days-num');
+  if (daysEl) daysEl.value = S.days;
+  document.getElementById('rate-badge').textContent = rateLabel(S.days);
+
+  // Breakdown
+  const bEl = document.getElementById('breakdown');
+  if (lines.length === 0) {
+    bEl.style.display = 'none';
+    return;
+  }
+  bEl.style.display = 'block';
+  bEl.innerHTML = `<div class="breakdown-header">📋 Состав заказа</div>` +
+    lines.map(l => `<div class="breakdown-item">
+      <span class="bn">${l.name}${l.qty > 1 ? ` ×${l.qty}` : ''}</span>
+      <span class="bp">${fmt(l.price)}</span>
+    </div>`).join('') +
+    `<div class="breakdown-total"><span>Итого</span><span>${fmt(total)}</span></div>`;
+}
+
+// ════════════════════════════════════════════
+//  ДЕЙСТВИЯ
+// ════════════════════════════════════════════
+function setVip(btn) {
+  S.vip = btn.dataset.vip;
+  document.querySelectorAll('.vip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function changeDays(d) {
+  S.days = Math.max(1, Math.min(21, S.days + d));
+  if (S.dateFrom) {
+    const d1 = new Date(S.dateFrom);
+    d1.setDate(d1.getDate() + S.days);
+    S.dateTo = d1.toISOString().slice(0,10);
+  }
+  document.getElementById('warn-weekend').classList.remove('show');
+  updateDateRangeLabel();
+  renderAll();
+}
+
+function setDaysManual(val) {
+  const n = Math.max(1, Math.min(21, parseInt(val) || 1));
+  S.days = n;
+  if (S.dateFrom) {
+    const d1 = new Date(S.dateFrom);
+    d1.setDate(d1.getDate() + n);
+    S.dateTo = d1.toISOString().slice(0,10);
+  }
+  updateDateRangeLabel();
+  renderAll();
+}
+
+function setDateFrom(val) {
+  S.dateFrom = val;
+  if (S.dateTo && val > S.dateTo) { S.dateTo = ''; }
+  updateDateRangeLabel();
+  calcDaysFromDates();
+}
+
+function setDateTo(val) {
+  S.dateTo = val;
+  updateDateRangeLabel();
+  calcDaysFromDates();
+}
+
+function calcDaysFromDates() {
+  if (S.dateFrom && S.dateTo && S.dateTo > S.dateFrom) {
+    const diff = Math.round((new Date(S.dateTo) - new Date(S.dateFrom)) / 86400000);
+    if (diff >= 1) {
+      S.days = Math.min(21, diff);
+      const el = document.getElementById('days-num');
+      if (el) el.value = S.days;
+      renderAll();
+      return;
+    }
+  }
+  renderAll();
+}
+
+function setQtyDirect(id, val) {
+  S.qty[id] = Math.max(0, parseInt(val) || 0);
+  const el = document.getElementById('qn-' + id);
+  if (el) el.classList.toggle('has-qty', S.qty[id] > 0);
+  updateTotals();
+}
+
+function setCat(cat, btn) {
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['splav','kemping','acc'].forEach(c => {
+    document.getElementById('sec-'+c).classList.toggle('show', c === cat);
+  });
+}
+
+function chQty(id, delta) {
+  S.qty[id] = Math.max(0, (S.qty[id] || 0) + delta);
+  const el = document.getElementById('qn-' + id);
+  if (el) {
+    el.value = S.qty[id];
+    el.classList.toggle('has-qty', S.qty[id] > 0);
+  }
+  updateTotals();
+}
+
+function toggleSvc(id) {
+  S.svcs[id] = !S.svcs[id];
+  if (S.svcs[id] && id === 'transport' && S.dlv.km > 0) computeTransport();
+  renderServices();
+  updateTotals();
+}
+
+function togglePickup() {
+  S.dlv.withPickup = !S.dlv.withPickup;
+  S.dlv.driverDays = S.dlv.withPickup ? 2 : 1;
+  if (S.dlv.km > 0) computeTransport();
+  renderServices();
+  updateTotals();
+}
+
+function setDlvField(field, value) {
+  S.dlv[field] = parseFloat(value) || 0;
+  if (S.dlv.km > 0) {
+    computeTransport();
+    // Обновляем только итоги (без полного ре-рендера — фокус не теряется)
+    const r = S.dlvResult;
+    if (r) {
+      const rows = document.querySelectorAll('.dlv-result-row .rv');
+      if (rows.length >= 5) {
+        rows[0].textContent = fmt2(r.costPerKm) + ' р/км';
+        rows[1].textContent = fmt(r.tripCost);
+        rows[2].textContent = fmt(r.salaryTotal);
+        rows[3].textContent = fmt(r.cost);
+        rows[4].textContent = fmt(r.profit);
+      }
+      const tv = document.querySelector('.dlv-total-row .tv');
+      if (tv) tv.textContent = fmt(r.total);
+    }
+    updateTotals();
+  }
+}
+
+function computeTransport() {
+  const d = S.dlv;
+  if (!d.km) return;
+  const legs        = d.withPickup ? 4 : 2;
+  const costPerKm   = (d.fuelPrice * d.fuelRate / 100) + d.amort; // л/100км
+  const tripCost    = Math.round(costPerKm * d.km * legs);
+  const salaryTotal = Math.round(d.salary * d.driverDays);
+  const cost        = tripCost + salaryTotal;
+  const profit      = Math.round(cost * d.margin / 100);
+  const total       = cost + profit;
+  S.dlvResult       = { costPerKm, tripCost, salaryTotal, cost, profit, total };
+  transportPrice    = total;
+}
+
+// ─── Геокодирование + маршрут (OpenStreetMap/OSRM, бесплатно) ───
+async function calcRoute() {
+  const fromEl = document.getElementById('dlv-from');
+  const toEl   = document.getElementById('dlv-to');
+  const from   = (fromEl ? fromEl.value : '') || S.dlv.addrFrom;
+  const to     = (toEl   ? toEl.value   : '') || S.dlv.addrTo;
+  S.dlv.addrFrom = from; S.dlv.addrTo = to;
+
+  const btn    = document.getElementById('btn-route');
+  const status = document.getElementById('route-status');
+  if (!from || !to) { status.textContent = '⚠️ Введите оба адреса'; return; }
+
+  btn.disabled = true; btn.textContent = '⏳ Считаем...';
+  status.textContent = '';
+
+  try {
+    const geo = async (q) => {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=ru`,
+        { headers: { 'User-Agent': 'turizmo365-calc/1.0' } }
+      );
+      const j = await r.json();
+      if (!j.length) throw new Error(`Адрес не найден: "${q}"`);
+      return { lat: parseFloat(j[0].lat), lon: parseFloat(j[0].lon) };
+    };
+
+    const [A, B] = await Promise.all([geo(from), geo(to)]);
+    const route  = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${A.lon},${A.lat};${B.lon},${B.lat}?overview=false`
+    );
+    const rj = await route.json();
+    if (rj.code !== 'Ok') throw new Error('Маршрут не найден (OSRM)');
+
+    const km = Math.round(rj.routes[0].distance / 1000);
+    S.dlv.km = km;
+    computeTransport();
+    renderServices();
+    updateTotals();
+    // восстановить адреса в полях после рендера
+    setTimeout(() => {
+      const f = document.getElementById('dlv-from');
+      const t = document.getElementById('dlv-to');
+      if (f) f.value = from;
+      if (t) t.value = to;
+      if (status) status.innerHTML = `✅ Маршрут: <b>${km} км</b> в одну сторону`;
+    }, 0);
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🗺 Рассчитать маршрут'; }
+  }
+}
+
+function fmt2(n) { return (+n).toFixed(2); }
+
+function resetAll() {
+  S.qty = {};
+  S.svcs = {};
+  S.vip = 'ррц';
+  S.days = 1;
+  transportPrice = 0;
+  S.dlvResult = null;
+  S.dlv = { addrFrom:'', addrTo:'', km:0, fuelPrice:74, fuelRate:10, amort:3.8, salary:6000, driverDays:1, withPickup:false, margin:60 };
+  document.querySelectorAll('.vip-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  renderAll();
+}
+
+function copyCalc() {
+  const { total, savings, lines } = calcAll();
+  if (lines.length === 0) {
+    showToast('⚠️ Добавьте снаряжение!');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+
+  // Разделяем снаряжение и услуги
+  const svcNames = new Set(SVCS.map(s => s.name));
+  const equipLines = lines.filter(l => !svcNames.has(l.name));
+  const svcLines   = lines.filter(l =>  svcNames.has(l.name));
+  const equipTotal = equipLines.reduce((s, l) => s + l.price, 0);
+  const svcTotal   = svcLines.reduce((s, l) => s + l.price, 0);
+
+  let text = `🏕 TURIZMO 365 — Расчёт аренды\n`;
+  text += `${'─'.repeat(28)}\n`;
+  text += `📅 Дата составления: ${today}\n`;
+  if (S.dateFrom) {
+    const df = new Date(S.dateFrom).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
+    text += `📅 Начало аренды: ${df}\n`;
+  }
+  if (S.dateTo) {
+    const dt = new Date(S.dateTo).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
+    text += `📅 Конец аренды: ${dt}\n`;
+  } else {
+    text += `📅 Срок ${S.days} ${dayWord(S.days)}\n`;
+  }
+  text += `${'✀'.repeat(28)}\n`;
+
+  // Блок снаряжения
+  if (equipLines.length > 0) {
+    text += `📦 Cнаряжение:\n`;
+    equipLines.forEach(l => { text += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''} — ${fmt(l.price)}\n`; });
+    text += `  Итого снаряжения: ${fmt(equipTotal)}\n`;
+  }
+
+  // Блок Eслуг с реальными ценами
+  const activeSvcs = SVCS.filter(s => S.svcs[s.id]);
+  if (activeSvcs.length > 0) {
+    text += `\n🔧 Услуги:\n`;
+    activeSvcs.forEach(s => {
+      if (s.hasCalc) {
+        if (transportPrice > 0) text += `  • ${s.name}: ${fmt(transportPrice)}\n`;
+        return;
+      }
+      if (SVC_RATES[s.id]) {
+        const ap = autoSvcPrice(s.id);
+        text += `  • ${s.name}: ${ap > 0 ? fmt(ap) : '(включено)'}\n`;
+        return;
+      }
+      if (s.price) { text += `  • ${s.name}: ${fmt(s.price)}\n`; return; }
+      const ep = S.svcPrices[s.id] || 0;
+      text += `  • ${s.name}: ${ep > 0 ? fmt(ep) : '(включено)'}\n`;
+    });
+    if (svcTotal > 0) text += `  Итого услуги: ${fmt(svcTotal)}\n`;
+  }
+
+  text += `${'─'.repeat(28)}\n`;
+  text += `💰 ИТОГО: ${fmt(total)}`;
+  if (savings > 0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
+
+  saveHistory();
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('✅ Скопировано!'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showToast('✅ Скопировано!'); }
+      catch(e) { showToast('❌ Не удалось скопировать'); }
+      document.body.removeChild(ta);
+    });
+}
+
+function dayWord(n) {
+  if (n === 1) return 'сутки';
+  if (n >= 2 && n <= 4) return 'суток';
+  return 'суток';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ════════════════════════════════════════════
+//  TELEGRAM MINI APP
+// ════════════════════════════════════════════
+(function initTelegram() {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return; // запуск в браузере — всё работает и без этого
+
+  tg.ready();
+  tg.expand(); // на весь экран
+
+  // Нижняя нативная кнопка Telegram — «Скопировать расчёт»
+  const mb = tg.MainButton;
+  mb.setText('📋 Скопировать расчёт');
+  mb.color = '#1d4ed8';
+  mb.textColor = '#ffffff';
+
+  // Показывать кнопку только когда есть что-то в заказе
+  function syncMainButton() {
+    const { lines } = calcAll();
+    if (lines.length > 0) mb.show();
+    else mb.hide();
+  }
+
+  mb.onClick(function() {
+    copyCalc();
+  });
+
+  // Перехватим updateTotals чтобы синхронизировать кнопку
+  const _orig = updateTotals;
+  window.updateTotals = function() { _orig(); syncMainButton(); };
+
+  syncMainButton();
+})();
+
+// ════════════════════════════════════════════
+//  КП — КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ (PDF)
+// ════════════════════════════════════════════
+function generateKP() {
+  const { total, savings, lines } = calcAll();
+  if (lines.length === 0) {
+    showToast('⚠️ Добавьте оборудование в заказ');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' });
+  const vipLabels = { 'ррц':'РРЦ (без скидки)', 'vip1':'VIP-1 (15%)', 'vip2':'VIP-2 (20%)', 'vip3':'VIP-3 (25%)', 'vip4':'VIP-4 (30%)' };
+  const vipLabel = vipLabels[S.vip] || S.vip;
+  const dayText = S.days === 1 ? '1 сутки' : S.days + ' суток';
+
+  const rowsHtml = lines.map(l => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;">${l.name}${l.qty > 1 ? ` &times;${l.qty}` : ''}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">${l.price.toLocaleString('ru-RU')} ₽</td>
+    </tr>`).join('');
+
+  const savingsRow = savings > 0 ? `
+    <tr>
+      <td style="padding:8px 12px;color:#16a34a;">Скидка</td>
+      <td style="padding:8px 12px;text-align:right;color:#16a34a;">−${savings.toLocaleString('ru-RU')} ₽</td>
+    </tr>` : '';
+
+  // Build overlay with KP preview — works in Telegram Mobile (screenshot) + Desktop (print→PDF)
+  const overlay = document.createElement('div');
+  overlay.id = 'kp-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#f0f4f8;z-index:9999;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+
+  overlay.innerHTML = `
+    <div class="kp-toolbar" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+      <button id="kp-close-btn" style="background:rgba(255,255,255,.2);border:none;color:white;border-radius:8px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0;">✕</button>
+      <span style="font-weight:700;flex:1;text-align:center;font-size:15px;">📄 КП</span>
+      <button id="kp-pdf-btn" style="background:rgba(255,255,255,.2);border:none;color:white;border-radius:8px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0;">🖨 PDF</button>
+    </div>
+    <div style="max-width:600px;margin:0 auto;padding:20px 14px 40px;">
+      <div style="background:white;border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.08);display:flex;align-items:center;gap:14px;">
+        <img src="./logo.png" alt="TURIZMO 365" style="height:52px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div style="display:none;font-size:20px;font-weight:800;color:#1e293b;">🏕 TURIZMO 365</div>
+        <div style="border-left:2px solid #e2e8f0;padding-left:14px;">
+          <div style="font-size:13px;color:#64748b;">Коммерческое предложение</div>
+          <div style="font-size:12px;color:#94a3b8;">Аренда туристического снаряжения</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;margin-bottom:16px;font-size:13px;flex-wrap:wrap;">
+        <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Дата составления</div>${today}</div>
+        ${S.dateFrom ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Начало аренды</div>${new Date(S.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : ''}
+        ${S.dateTo ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Конец аренды</div>${new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Срок аренды</div>${dayText}</div>`}
+      </div>
+      <div style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
+        <div style="background:#f0f4f8;padding:10px 16px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">
+          <span>Позиция</span><span>Сумма</span>
+        </div>
+        ${lines.map(l => `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;">
+          <span>${l.name}${l.qty > 1 ? ` ×${l.qty}` : ''}</span>
+          <span style="font-weight:600;white-space:nowrap;margin-left:12px;">${l.price.toLocaleString('ru-RU')} ₽</span>
+        </div>`).join('')}
+        ${savings > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#16a34a;">
+          <span>Скидка</span><span style="font-weight:600;">−${savings.toLocaleString('ru-RU')} ₽</span>
+        </div>` : ''}
+        <div style="display:flex;justify-content:space-between;padding:14px 16px;background:#eff6ff;border-top:2px solid #1d4ed8;">
+          <span style="font-weight:700;font-size:16px;color:#1d4ed8;">ИТОГО К ОПЛАТЕ</span>
+          <span style="font-weight:800;font-size:18px;color:#1d4ed8;">${total.toLocaleString('ru-RU')} ₽</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px;font-size:12px;color:#94a3b8;">${today}</div>
+    </div>`;
+
+  // Сохраняем данные КП глобально для kpPrint()
+  window._kpData = { lines, total, savings, today, dayText, dateFrom: S.dateFrom, dateTo: S.dateTo };
+  saveHistory();
+
+  document.body.appendChild(overlay);
+
+  // Вешаем слушатели ПОСЛЕ добавления в DOM — надёжнее чем onclick в innerHTML
+  document.getElementById('kp-close-btn').addEventListener('click', function() {
+    overlay.remove();
+  });
+  document.getElementById('kp-pdf-btn').addEventListener('click', function() {
+    kpPrint();
+  });
+}
+
+function kpPrint() {
+  const d = window._kpData;
+  if (!d) return;
+
+  const tg = window.Telegram?.WebApp;
+  const isTelegramMobile = tg && tg.initData && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isTelegramMobile) {
+    tg.showPopup && tg.showPopup({
+      title: '📄 PDF',
+      message: 'В Telegram печать недоступна.\nОткройте в браузере Safari:\n' + window.location.href + '\nи нажмите PDF там.',
+      buttons: [{ id: 'ok', type: 'ok', text: 'Понятно' }]
+    });
+    return;
+  }
+
+  const baseUrl = window.location.href.replace(/[^\/]+$/, '');
+
+  // Строим строки таблицы
+  const itemRows = d.lines.map(l =>
+    `<tr><td>${l.name}${l.qty > 1 ? ' &times;' + l.qty : ''}</td><td>${l.price.toLocaleString('ru-RU')} ₽</td></tr>`
+  ).join('');
+
+  const discountRow = d.savings > 0
+    ? `<tr class="disc"><td>Скидка</td><td>&minus;${d.savings.toLocaleString('ru-RU')} ₽</td></tr>`
+    : '';
+
+  const df = d.dateFrom ? new Date(d.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
+  const dt = d.dateTo   ? new Date(d.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
+
+  const metaHtml = `
+    <td><div class="mlabel">Дата составления</div><div>${d.today}</div></td>
+    ${df ? `<td><div class="mlabel">Начало аренды</div><div>${df}</div></td>` : ''}
+    ${dt ? `<td><div class="mlabel">Конец аренды</div><div>${dt}</div></td>` : (!df ? `<td><div class="mlabel">Срок аренды</div><div>${d.dayText}</div></td>` : '')}
+  `;
+
+  const printWin = window.open('', '_blank');
+  if (!printWin) { window.print(); return; }
+
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8">
+<title>КП — TURIZMO 365</title>
+<base href="${baseUrl}">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#1e293b; background:white; padding:24px 28px; }
+@page { size:A4 portrait; margin:0; }
+@media print { body { padding:1.5cm; } * { -webkit-print-color-adjust:exact; print-color-adjust:exact; } .no-print { display:none !important; } }
+
+.hdr { display:table; width:100%; margin-bottom:18px; }
+.hdr-logo { display:table-cell; width:58px; vertical-align:middle; }
+.hdr-logo img { height:48px; display:block; }
+.hdr-info { display:table-cell; vertical-align:middle; padding-left:14px; border-left:2px solid #e2e8f0; }
+.hdr-info .s1 { font-size:13px; color:#475569; }
+.hdr-info .s2 { font-size:11px; color:#94a3b8; margin-top:2px; }
+
+table.meta { width:100%; border-collapse:collapse; margin-bottom:18px; }
+table.meta td { padding:0 20px 0 0; vertical-align:top; font-size:13px; }
+.mlabel { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+
+table.items { width:100%; border-collapse:collapse; }
+table.items thead tr { background:#f0f4f8; }
+table.items thead th { padding:8px 12px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; border:1px solid #e2e8f0; }
+table.items thead th:last-child { text-align:right; }
+table.items td { padding:9px 12px; border:1px solid #e8edf3; font-size:13px; }
+table.items td:last-child { text-align:right; white-space:nowrap; font-weight:600; }
+tr.disc td { color:#16a34a; }
+tr.tot { background:#eff6ff; }
+tr.tot td { padding:11px 12px; border:2px solid #1d4ed8; font-weight:700; font-size:14px; color:#1d4ed8; }
+tr.tot td:last-child { font-size:17px; font-weight:800; }
+
+.foot { margin-top:18px; text-align:center; font-size:11px; color:#94a3b8; }
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-logo"><img src="./logo.png" onerror="this.style.display='none'"></div>
+  <div class="hdr-info">
+    <div class="s1">Коммерческое предложение</div>
+    <div class="s2">Аренда туристического снаряжения</div>
+  </div>
+</div>
+<table class="meta"><tr>${metaHtml}</tr></table>
+<table class="items">
+  <thead><tr><th>Позиция</th><th style="text-align:right;">Сумма</th></tr></thead>
+  <tbody>
+    ${itemRows}
+    ${discountRow}
+    <tr class="tot"><td>ИТОГО К ОПЛАТЕ</td><td>${d.total.toLocaleString('ru-RU')} ₽</td></tr>
+  </tbody>
+</table>
+<div class="foot">TURIZMO 365 · ${d.today}</div>
+<div class="no-print" style="text-align:center;margin-top:24px;">
+  <button onclick="window.close()" style="padding:12px 28px;background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:12px;font-size:15px;font-weight:600;color:#475569;cursor:pointer;">✕ Закрыть окно</button>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
+</body></html>`);
+  printWin.document.close();
+}
+
+// ════════════════════════════════════════════
+//  DATE RANGE PICKER
+// ════════════════════════════════════════════
+let _calYear, _calMonth, _calSel1, _calSel2;
+
+function updateDateRangeLabel() {
+  const el = document.getElementById('date-range-label');
+  if (!el) return;
+  if (S.dateFrom && S.dateTo) {
+    const df = new Date(S.dateFrom + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    const dt = new Date(S.dateTo + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    el.textContent = '📅 ' + df + ' → ' + dt;
+  } else if (S.dateFrom) {
+    const df = new Date(S.dateFrom + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    el.textContent = '📅 С ' + df + ' → ...';
+  } else {
+    el.textContent = '📅 Выбрать даты аренды';
+  }
+}
+
+function openDatePicker() {
+  const now = new Date();
+  _calYear = S.dateFrom ? +S.dateFrom.slice(0,4) : now.getFullYear();
+  _calMonth = S.dateFrom ? +S.dateFrom.slice(5,7) - 1 : now.getMonth();
+  _calSel1 = S.dateFrom || null;
+  _calSel2 = S.dateTo || null;
+  renderCal();
+}
+
+function renderCal() {
+  const existing = document.getElementById('cal-overlay');
+  if (existing) existing.remove();
+
+  const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const DOWS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDate = new Date(_calYear, _calMonth + 1, 0).getDate();
+  let startDow = firstDay.getDay(); // 0=Вс
+  startDow = startDow === 0 ? 6 : startDow - 1; // Пн=0
+
+  let hint = '';
+  if (_calSel1 && _calSel2) {
+    const df = new Date(_calSel1+'T12:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'short'});
+    const dt = new Date(_calSel2+'T12:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'short'});
+    hint = df + ' → ' + dt;
+  } else if (_calSel1) {
+    hint = 'Теперь выберите дату окончания';
+  } else {
+    hint = 'Выберите дату начала аренды';
+  }
+
+  let gridHtml = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < startDow; i++) gridHtml += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = _calYear + '-' + String(_calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    let cls = 'cal-day';
+    if (ds === today) cls += ' today';
+    if (ds === _calSel1) cls += ' start';
+    if (ds === _calSel2) cls += ' end';
+    if (_calSel1 && _calSel2 && ds > _calSel1 && ds < _calSel2) cls += ' in-range';
+    gridHtml += `<div class="${cls}" data-date="${ds}">${d}</div>`;
+  }
+
+  const applyBtn = (_calSel1 && _calSel2)
+    ? `<button id="cal-apply" style="width:100%;margin-top:14px;padding:13px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">✓ Применить</button>`
+    : '';
+
+  const ov = document.createElement('div');
+  ov.id = 'cal-overlay';
+  ov.className = 'cal-overlay';
+  ov.innerHTML = `
+    <div class="cal-box">
+      <div class="cal-header">
+        <button class="cal-nav" id="cal-prev">‹</button>
+        <div>
+          <div class="cal-month-title">${MONTHS[_calMonth]} ${_calYear}</div>
+          <div class="cal-hint">${hint}</div>
+        </div>
+        <button class="cal-nav" id="cal-next">›</button>
+      </div>
+      <div class="cal-grid">${gridHtml}</div>
+      ${applyBtn}
+    </div>`;
+
+  document.body.appendChild(ov);
+
+  ov.addEventListener('click', function(e) { if (e.target === ov) closeDatePicker(); });
+  document.getElementById('cal-prev').addEventListener('click', function() {
+    _calMonth--; if (_calMonth < 0) { _calMonth = 11; _calYear--; } renderCal();
+  });
+  document.getElementById('cal-next').addEventListener('click', function() {
+    _calMonth++; if (_calMonth > 11) { _calMonth = 0; _calYear++; } renderCal();
+  });
+  const applyEl = document.getElementById('cal-apply');
+  if (applyEl) applyEl.addEventListener('click', function() { applyDateRange(); closeDatePicker(); });
+
+  ov.querySelectorAll('.cal-day[data-date]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const date = this.dataset.date;
+      if (!_calSel1 || (_calSel1 && _calSel2) || date < _calSel1) {
+        _calSel1 = date; _calSel2 = null;
+      } else if (date === _calSel1) {
+        _calSel1 = null; _calSel2 = null;
+      } else {
+        _calSel2 = date;
+        applyDateRange();
+        closeDatePicker();
+        return;
+      }
+      renderCal();
+    });
+  });
+}
+
+function applyDateRange() {
+  if (_calSel1) { S.dateFrom = _calSel1; }
+  if (_calSel2) { S.dateTo = _calSel2; }
+  if (_calSel1 && _calSel2) {
+    const diff = Math.round((new Date(_calSel2) - new Date(_calSel1)) / 86400000);
+    if (diff >= 1) S.days = Math.min(21, diff);
+  }
+  updateDateRangeLabel();
+  renderAll();
+}
+
+function closeDatePicker() {
+  const ov = document.getElementById('cal-overlay');
+  if (ov) ov.remove();
+}
+
+// ════════════════════════════════════════════
+//  ИСТОРИя РАСЧСТОВ
+// ════════════════════════════════════════════
+const HIST_KEY = 't365_history';
+const HIST_MAX = 10;
+
+function saveHistory() {
+  const { total, lines } = calcAll();
+  if (lines.length === 0) return;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+
+  const summary = lines.slice(0, 4).map(l => l.name + (l.qty > 1 ? ' ×' + l.qty : '')).join(', ')
+    + (lines.length > 4 ? ` и ещё ${lines.length - 4}` : '');
+
+  const entry = {
+    ts: now.getTime(),
+    dateStr,
+    timeStr,
+    total,
+    days: S.days,
+    dateFrom: S.dateFrom,
+    dateTo: S.dateTo,
+    vip: S.vip,
+    qty: JSON.parse(JSON.stringify(S.qty)),
+    svcs: JSON.parse(JSON.stringify(S.svcs)),
+    svcPrices: JSON.parse(JSON.stringify(S.svcPrices)),
+    transportPrice,
+    summary
+  };
+
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) {}
+  hist.unshift(entry);
+  if (hist.length > HIST_MAX) hist = hist.slice(0, HIST_MAX);
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch(e) {}
+}
+
+function openHistory() {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) {}
+
+  const overlay = document.createElement('div');
+  overlay.className = 'hist-overlay';
+  overlay.id = 'hist-overlay';
+
+  const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
+  const fmtDates = e => {
+    if (e.dateFrom && e.dateTo) {
+      const df = new Date(e.dateFrom).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit'});
+      const dt = new Date(e.dateTo).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit'});
+      return `${df}–${dt}, `;
+    }
+    return '';
+  };
+
+  let itemsHtml = '';
+  if (hist.length === 0) {
+    itemsHtml = '<div class="hist-empty">История пуста.<br>Сформируйте КП или скопируйте расчёт.</div>';
+  } else {
+    itemsHtml = hist.map((e, i) => `
+      <div class="hist-item">
+        <div class="hist-item-info">
+          <div class="hist-item-date">${e.dateStr} ${e.timeStr} · ${fmtDates(e)}${e.days} ${e.days===1?'сутки':'суток'}|/div>
+          <div class="hist-item-total">${fmt(e.total)}</div>
+          <div class="hist-item-summary">${e.summary}</div>
+        </div>
+        <button class="hist-restore" data-idx="${i}">Восстановить</button>
+      </div>
+    `).join('');
+  }
+
+  overlay.innerHTML = `
+    <div class="hist-box">
+      <div class="hist-head">
+        <span>📜 История расчётов</span>
+        <button id="hist-close">✕</button>
+      </div>
+      <div class="hist-list">${itemsHtml}</div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('hist-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  overlay.querySelectorAll('.hist-restore').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      restoreFromHistory(hist[idx]);
+      overlay.remove();
+    });
+  });
+}
+
+function restoreFromHistory(entry) {
+  S.qty = JSON.parse(JSON.stringify(entry.qty));
+  S.svcs = JSON.parse(JSON.stringify(entry.svcs));
+  S.svcPrices = JSON.parse(JSON.stringify(entry.svcPrices));
+  S.days = entry.days;
+  S.dateFrom = entry.dateFrom || '';
+  S.dateTo = entry.dateTo || '';
+  S.vip = entry.vip || 'ррц';
+  transportPrice = entry.transportPrice || 0;
+  S.dlvResult = null;
+
+  // Обновляем кнопки VIP
+  const vipOrder = ['ррц', 'базовый', 'стандартный', 'премиум'];
+  document.querySelectorAll('.vip-btn').forEach((b, i) => {
+    b.classList.toggle('active', vipOrder[i] === S.vip);
+  });
+
+  updateDateRangeLabel();
+  renderAll();
+  showToast('✅ Расчёт восстановлен!');
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+renderAll();
+</script>
+</body>
+</html>
