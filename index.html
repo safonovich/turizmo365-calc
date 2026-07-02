@@ -824,9 +824,12 @@ const SVCS = [
   { id:'wash_sup',       name:'Мойка/сушка сапбордов',      desc:'300₽ / сап',                   price:null, tag:'🚿' },
   { id:'lager',         name:'Организация лагеря',         desc:'Палатки, шатры',               price:null, tag:'🏕' },
   { id:'wash_palatka',  name:'Мойка/сушка палатки',        desc:'При необходимости',             price:800,  tag:'🧹' },
-  { id:'unload_far',   name:'Разгрузка байдарок'              , desc:'от 100 м от машины',          price:500,  tag:'📦' },
+  { id:'unload_far',   name:'Разгрузка байдарок',              desc:'от 100 м от машины',          price:500,  tag:'📦' },
+  { id:'instructor',   name:'Инструктор (сопровождение на воде)', desc:'Цена по договорённости', price:null, tag:'🏄' },
+  { id:'food',         name:'Еда',                             desc:'Питание и прочее',             price:null, tag:'🍽' },
+  { id:'custom',       name:'',                                desc:'',                             price:null, tag:'✏️', isCustom:true },
+  { id:'custom2',      name:'',                                desc:'',                             price:null, tag:'✏️', isCustom:true },
 ];
-
 // Цена транспорта (из калькулятора)
 let transportPrice = 0;
 
@@ -841,6 +844,8 @@ let S = {
   qty: {},
   svcs: {},
   svcPrices: {},
+  customSvcName: '',
+  customSvcName2: '',
   // Поля калькулятора доставки
   dlv: {
     addrFrom: '',   // Откуда (база/склад)
@@ -913,7 +918,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'boats');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: b.name, qty, price: vp * qty });
+    lines.push({ name: b.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   ACCS.forEach(a => {
@@ -923,7 +928,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'acc');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: a.name, qty, price: vp * qty });
+    lines.push({ name: a.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   KEMP.forEach(k => {
@@ -933,7 +938,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'kemping');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: k.name, qty, price: vp * qty });
+    lines.push({ name: k.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   SVCS.forEach(s => {
@@ -959,7 +964,16 @@ function calcAll() {
       return;
     }
     // "Включено" services with editable price (lager, etc.)
-    const ep = S.svcPrices[s.id] || 0;
+    if (s.isCustom) {
+      const cp = S.svcPrices[s.id] || 0;
+      const cname = s.id === 'custom' ? (S.customSvcName || 'Своя услуга') : (S.customSvcName2 || 'Своя услуга');
+      if (cp > 0) {
+        total += cp; base += cp;
+        lines.push({ name: cname, qty: 1, price: cp });
+      }
+      return;
+    }
+        const ep = S.svcPrices[s.id] || 0;
     if (ep > 0) {
       total += ep;
       base += ep;
@@ -1125,6 +1139,36 @@ function dlvCalcPanel() {
 function renderServices() {
   document.getElementById('services-list').innerHTML = SVCS.map(s => {
     const on = S.svcs[s.id];
+    // ── Кастомная услуга ──
+    if (s.isCustom) {
+      const curName  = (s.id === 'custom' ? S.customSvcName : S.customSvcName2) || '';
+      const curPrice = S.svcPrices[s.id] || '';
+      const itemHtml = `<div class="svc-item" onclick="toggleSvc('${s.id}')">
+        <div class="svc-check ${on?'on':''}"></div>
+        <div class="svc-info">
+          <div class="svc-name">✏️ ${curName || 'Своя услуга'}</div>
+          <div class="svc-desc">${on && curPrice > 0 ? `<b style="color:var(--primary)">${fmt(curPrice)}</b>` : 'Введите название и цену'}</div>
+        </div>
+      </div>`;
+      const expandHtml = on ? `<div class="svc-expand" style="display:block;padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Название услуги</div>
+          <input type="text" class="dlv-input" style="width:100%;max-width:280px;"
+            placeholder="Например: Аренда весел" value="${curName}"
+            onclick="event.stopPropagation()"
+            oninput="setCustomName('${s.id}',this.value)">
+        </div>
+        <div>
+          <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Стоимость, ₽</div>
+          <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
+            placeholder="0" value="${curPrice}"
+            onclick="event.stopPropagation()"
+            oninput="setSvcPrice('${s.id}',this.value)">
+        </div>
+      </div>` : '';
+      return itemHtml + expandHtml;
+    }
+
     let priceStr;
     if (s.hasCalc) {
       priceStr = on && transportPrice > 0
@@ -1169,6 +1213,12 @@ function renderServices() {
 
 function setSvcPrice(id, val) {
   S.svcPrices[id] = parseInt(val) || 0;
+  updateTotals();
+}
+
+function setCustomName(id, val) {
+  if (id === 'custom') S.customSvcName = val.trim();
+  else S.customSvcName2 = val.trim();
   updateTotals();
 }
 
@@ -1217,44 +1267,84 @@ function setVip(btn) {
 
 function changeDays(d) {
   S.days = Math.max(1, Math.min(21, S.days + d));
+  if (S.dateFrom) {
+    const d1 = new Date(S.dateFrom);
+    d1.setDate(d1.getDate() + S.days);
+    S.dateTo = d1.toISOString().slice(0,10);
+  }
+  document.getElementById('warn-weekend').classList.remove('show');
+  updateDateRangeLabel();
+  renderAll();
+}
 
-  // Блок снаряжения
-  if (equipLines.length > 0) {
-    text += `📦 Cнаряжение:\n`;
-    equipLines.forEach(l => { text += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''} — ${fmt(l.price)}\n`; });
-    text += `  Итого снаряжения: ${fmt(equipTotal)}\n`;
+function copyCalc() {
+  const { total, savings, lines } = calcAll();
+  if (lines.length === 0) {
+    showToast('⚠️ Добавьте снаряжение!');
+    return;
   }
 
-  // Блок Eслуг с реальными ценами
-  const activeSvcs = SVCS.filter(s => S.svcs[s.id]);
+  const today = new Date().toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+
+  const svcNames = new Set([
+    ...SVCS.map(s => s.name).filter(Boolean),
+    S.customSvcName, S.customSvcName2,
+  ]);
+  const equipLines = lines.filter(l => !svcNames.has(l.name));
+  const svcLines   = lines.filter(l =>  svcNames.has(l.name));
+  const equipTotal = equipLines.reduce((s, l) => s + l.price, 0);
+  const svcTotal   = svcLines.reduce((s, l) => s + l.price, 0);
+
+  let text = '🏕 TURIZMO 365 — Расчёт аренды\n';
+  text += '─'.repeat(28) + '\n';
+  text += '📅 Дата составления: ' + today + '\n';
+
+  if (equipLines.length > 0) {
+    text += '📦 Снаряжение:\n';
+    equipLines.forEach(function(l) {
+      if (l.qty > 1 && l.unitPrice) {
+        text += '  • ' + l.name + ' ×' + l.qty + ' × ' + fmt(l.unitPrice) + ' = ' + fmt(l.price) + '\n';
+      } else {
+        text += '  • ' + l.name + ' — ' + fmt(l.price) + '\n';
+      }
+    });
+    text += '  Итого снаряжение: ' + fmt(equipTotal) + '\n';
+  }
+
+  const activeSvcs = SVCS.filter(function(s) { return S.svcs[s.id]; });
   if (activeSvcs.length > 0) {
-    text += `\n🔧 Услуги:\n`;
-    activeSvcs.forEach(s => {
+    text += '\n🔧 Услуги:\n';
+    activeSvcs.forEach(function(s) {
       if (s.hasCalc) {
-        if (transportPrice > 0) text += `  • ${s.name}: ${fmt(transportPrice)}\n`;
+        if (transportPrice > 0) text += '  • ' + s.name + ': ' + fmt(transportPrice) + '\n';
         return;
       }
       if (SVC_RATES[s.id]) {
-        const ap = autoSvcPrice(s.id);
-        text += `  • ${s.name}: ${ap > 0 ? fmt(ap) : '(включено)'}\n`;
+        var ap = autoSvcPrice(s.id);
+        text += '  • ' + s.name + ': ' + (ap > 0 ? fmt(ap) : '(включено)') + '\n';
         return;
       }
-      if (s.price) { text += `  • ${s.name}: ${fmt(s.price)}\n`; return; }
-      const ep = S.svcPrices[s.id] || 0;
-      text += `  • ${s.name}: ${ep > 0 ? fmt(ep) : '(включено)'}\n`;
+      if (s.isCustom) {
+        var cname = s.id === 'custom' ? (S.customSvcName || 'Своя услуга') : (S.customSvcName2 || 'Своя услуга');
+        var cp = S.svcPrices[s.id] || 0;
+        if (cp > 0) text += '  • ' + cname + ': ' + fmt(cp) + '\n';
+        return;
+      }
+      if (s.price) { text += '  • ' + s.name + ': ' + fmt(s.price) + '\n'; return; }
+      var ep = S.svcPrices[s.id] || 0;
+      text += '  • ' + s.name + ': ' + (ep > 0 ? fmt(ep) : '(включено)') + '\n';
     });
-    if (svcTotal > 0) text += `  Итого услуги: ${fmt(svcTotal)}\n`;
+    if (svcTotal > 0) text += '  Итого услуги: ' + fmt(svcTotal) + '\n';
   }
 
-  text += `${'─'.repeat(28)}\n`;
-  text += `💰 ИТОГО: ${fmt(total)}`;
-  if (savings > 0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
+  text += '─'.repeat(28) + '\n';
+  text += '💰 ИТОГО: ' + fmt(total);
 
   saveHistory();
   navigator.clipboard.writeText(text)
-    .then(() => showToast('✅ Скопировано!'))
-    .catch(() => {
-      const ta = document.createElement('textarea');
+    .then(function() { showToast('✅ Скопировано!'); })
+    .catch(function() {
+      var ta = document.createElement('textarea');
       ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();
       try { document.execCommand('copy'); showToast('✅ Скопировано!'); }
@@ -1328,7 +1418,8 @@ function generateKP() {
   const rowsHtml = lines.map(l => `
     <tr>
       <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;">${l.name}${l.qty > 1 ? ` &times;${l.qty}` : ''}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">${l.price.toLocaleString('ru-RU')} ₽</td>
+      
+      <td style="color:#94a3b8;font-size:11px;white-space:nowrap;">${l.qty > 1 && l.unitPrice ? l.unitPrice.toLocaleString('ru-RU') + '₽/шт' : ''}</td><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">${l.price.toLocaleString('ru-RU')} ₽</td>
     </tr>`).join('');
 
   const savingsRow = savings > 0 ? `
@@ -1415,9 +1506,13 @@ function kpPrint() {
   const baseUrl = window.location.href.replace(/[^\/]+$/, '');
 
   // Строим строки таблицы
-  const itemRows = d.lines.map(l =>
-    `<tr><td>${l.name}${l.qty > 1 ? ' &times;' + l.qty : ''}</td><td>${l.price.toLocaleString('ru-RU')} ₽</td></tr>`
-  ).join('');
+  const itemRows = d.lines.map(function(l) {
+    var hasUnit = l.qty > 1 && l.unitPrice;
+    return '<tr><td>' + l.name + '</td>' +
+      '<td style="text-align:center;">' + (l.qty > 1 ? l.qty + ' шт.' : '—') + '</td>' +
+      '<td style="text-align:right;">' + (hasUnit ? l.unitPrice.toLocaleString('ru-RU') + ' ₽' : '—') + '</td>' +
+      '<td>' + l.price.toLocaleString('ru-RU') + ' ₽</td></tr>';
+  }).join('');
 
   const discountRow = '';
 
@@ -1454,6 +1549,7 @@ table.meta td { padding:0 20px 0 0; vertical-align:top; font-size:13px; }
 table.items { width:100%; border-collapse:collapse; }
 table.items thead tr { background:#f0f4f8; }
 table.items thead th { padding:8px 12px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; border:1px solid #e2e8f0; }
+table.items thead th:nth-child(2),table.items thead th:nth-child(3) { text-align:center; }
 table.items thead th:last-child { text-align:right; }
 table.items td { padding:9px 12px; border:1px solid #e8edf3; font-size:13px; }
 table.items td:last-child { text-align:right; white-space:nowrap; font-weight:600; }
@@ -1475,11 +1571,11 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
 </div>
 <table class="meta"><tr>${metaHtml}</tr></table>
 <table class="items">
-  <thead><tr><th>Позиция</th><th style="text-align:right;">Сумма</th></tr></thead>
+  <thead><tr><th>Позиция</th><th>Кол-во</th><th>Цена за ед.</th><th style="text-align:right;">Сумма</th></tr></thead>
   <tbody>
     ${itemRows}
     ${discountRow}
-    <tr class="tot"><td>ИТОГО К ОПЛАТЕ</td><td>${d.total.toLocaleString('ru-RU')} ₽</td></tr>
+    <tr class="tot"><td colspan="3">ИТОГО К ОПЛАТЕ</td><td>${d.total.toLocaleString('ru-RU')} ₽</td></tr>
   </tbody>
 </table>
 <div class="foot">TURIZMO 365 · ${d.today}</div>
