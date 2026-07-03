@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>TURIZMO 365 â Ð£Ð¿ÑÐ°Ð²Ð»ÐµÐ½Ð¸Ðµ ÑÐµÐ½Ð°Ð¼Ð¸</title>
+  <title>TURIZMO 365 — Управление ценами</title>
   <style>
     :root {
       --bg: #f0f4f8;
@@ -25,7 +25,7 @@
     .header h1 { font-size: 18px; font-weight: 700; }
     .header p  { font-size: 12px; opacity: 0.85; margin-top: 4px; }
 
-    /* âââ TABS âââ */
+    /* ─── TABS ─── */
     .tab-nav {
       display: flex; overflow-x: auto; background: white;
       border-bottom: 2px solid var(--border);
@@ -46,7 +46,7 @@
 
     .container { max-width: 600px; margin: 0 auto; padding: 14px; }
 
-    /* âââ SECTIONS âââ */
+    /* ─── SECTIONS ─── */
     .section {
       background: var(--card); border-radius: 14px; padding: 14px;
       margin-bottom: 14px; border: 1px solid var(--border);
@@ -60,7 +60,7 @@
     }
     .boat-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
 
-    /* âââ DAY PRICE GRID âââ */
+    /* ─── DAY PRICE GRID ─── */
     .days-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -86,7 +86,7 @@
     }
     .day-input:focus { border-color: var(--primary); }
 
-    /* âââ RATE GRID âââ */
+    /* ─── RATE GRID ─── */
     .rate-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px;
     }
@@ -102,7 +102,7 @@
     }
     .rate-input:focus { border-color: #7c3aed; }
 
-    /* âââ PRICE ROWS (acc / kemp / svc) âââ */
+    /* ─── PRICE ROWS (acc / kemp / svc) ─── */
     .price-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 9px 0; border-bottom: 1px solid var(--border); gap: 10px;
@@ -118,7 +118,7 @@
     }
     .price-input:focus { border-color: var(--primary); }
 
-    /* âââ BUTTONS âââ */
+    /* ─── BUTTONS ─── */
     .sticky-bottom {
       position: fixed; bottom: 0; left: 0; right: 0;
       padding: 10px 16px max(10px, env(safe-area-inset-bottom));
@@ -147,7 +147,7 @@
       cursor: pointer; text-align: center;
     }
 
-    /* âââ TOAST âââ */
+    /* ─── TOAST ─── */
     .toast {
       position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
       background: #1e293b; color: white; padding: 11px 22px;
@@ -166,133 +166,135 @@
 <body>
 
 <div class="header">
-  <h1>âï¸ Ð£Ð¿ÑÐ°Ð²Ð»ÐµÐ½Ð¸Ðµ ÑÐµÐ½Ð°Ð¼Ð¸</h1>
-  <p>TURIZMO 365 â ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ Ð¯ÑÐ¾Ð½Ð°</p>
+  <h1>⚙️ Управление ценами</h1>
+  <p>TURIZMO 365 — только для Ясона</p>
 </div>
 
 <!-- TAB NAVIGATION -->
 <div class="tab-nav">
-  <button class="tab-btn active" onclick="showTab('boats')">ð¶ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ¸</button>
-  <button class="tab-btn" onclick="showTab('sups')">ð Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´Ñ</button>
-  <button class="tab-btn" onclick="showTab('accs')">ð ÐÐºÑÐµÑÑÑÐ°ÑÑ</button>
-  <button class="tab-btn" onclick="showTab('kemp')">ð ÐÐµÐ¼Ð¿Ð¸Ð½Ð³</button>
-  <button class="tab-btn" onclick="showTab('svcs')">ð§ Ð£ÑÐ»ÑÐ³Ð¸</button>
+  <button class="tab-btn active" onclick="showTab('boats')">🛶 Байдарки</button>
+  <button class="tab-btn" onclick="showTab('sups')">🏄 Сапборды</button>
+  <button class="tab-btn" onclick="showTab('accs')">🎒 Аксессуары</button>
+  <button class="tab-btn" onclick="showTab('kemp')">🏕 Кемпинг</button>
+  <button class="tab-btn" onclick="showTab('svcs')">🔧 Услуги</button>
 </div>
 
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <!-- BOATS TAB                                              -->
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <div id="tab-boats" class="tab-content active">
 <div class="container">
 
-  <!-- ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-3 -->
+  <!-- Байдарка Шуя-3 -->
   <div class="section">
-    <div class="boat-name">ð£ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-3 <span class="boat-sub">3-Ð¼ÐµÑÑÐ½Ð°Ñ ÐÐÐ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🚣 Байдарка Шуя-3 <span class="boat-sub">3-местная КНБ</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d1" placeholder="3500"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d2" placeholder="4500"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d3" placeholder="5300"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d4" placeholder="5400"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d5" placeholder="5500"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d6" placeholder="5600"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="shuya3_d7" placeholder="5700"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="shuya3_d1" placeholder="3500"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="shuya3_d2" placeholder="4500"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="shuya3_d3" placeholder="5300"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="shuya3_d4" placeholder="5400"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="shuya3_d5" placeholder="5500"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="shuya3_d6" placeholder="5600"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="shuya3_d7" placeholder="5700"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya3_r814" placeholder="820"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya3_r1521" placeholder="800"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="shuya3_r814" placeholder="820"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="shuya3_r1521" placeholder="800"></div>
     </div>
   </div>
 
-  <!-- ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-2 -->
+  <!-- Байдарка Шуя-2 -->
   <div class="section">
-    <div class="boat-name">ð£ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-2 <span class="boat-sub">2-Ð¼ÐµÑÑÐ½Ð°Ñ ÐÐÐ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🚣 Байдарка Шуя-2 <span class="boat-sub">2-местная КНБ</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d1" placeholder="3000"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d2" placeholder="4000"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d3" placeholder="4700"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d4" placeholder="4900"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d5" placeholder="5000"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d6" placeholder="5100"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="shuya2_d7" placeholder="5200"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="shuya2_d1" placeholder="3000"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="shuya2_d2" placeholder="4000"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="shuya2_d3" placeholder="4700"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="shuya2_d4" placeholder="4900"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="shuya2_d5" placeholder="5000"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="shuya2_d6" placeholder="5100"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="shuya2_d7" placeholder="5200"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya2_r814" placeholder="700"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya2_r1521" placeholder="650"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="shuya2_r814" placeholder="700"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="shuya2_r1521" placeholder="650"></div>
     </div>
   </div>
 
-  <!-- ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-1 -->
+  <!-- Байдарка Шуя-1 -->
   <div class="section">
-    <div class="boat-name">ð£ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-1 <span class="boat-sub">1-Ð¼ÐµÑÑÐ½Ð°Ñ ÐÐÐ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🚣 Байдарка Шуя-1 <span class="boat-sub">1-местная КНБ</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d1" placeholder="2500"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d2" placeholder="3500"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d3" placeholder="4000"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d4" placeholder="4200"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d5" placeholder="4300"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d6" placeholder="4400"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="shuya1_d7" placeholder="4500"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="shuya1_d1" placeholder="2500"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="shuya1_d2" placeholder="3500"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="shuya1_d3" placeholder="4000"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="shuya1_d4" placeholder="4200"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="shuya1_d5" placeholder="4300"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="shuya1_d6" placeholder="4400"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="shuya1_d7" placeholder="4500"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya1_r814" placeholder="600"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="shuya1_r1521" placeholder="570"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="shuya1_r814" placeholder="600"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="shuya1_r1521" placeholder="570"></div>
     </div>
   </div>
 
-  <!-- ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° ÐÑÐ³Ð°-3 -->
+  <!-- Байдарка Луга-3 -->
   <div class="section">
-    <div class="boat-name">ð£ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° ÐÑÐ³Ð°-3 <span class="boat-sub">3-Ð¼ÐµÑÑÐ½Ð°Ñ ÐÐ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🚣 Байдарка Луга-3 <span class="boat-sub">3-местная НБ</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d1" placeholder="3000"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d2" placeholder="4000"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d3" placeholder="4700"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d4" placeholder="4900"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d5" placeholder="5000"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d6" placeholder="5100"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="luga3_d7" placeholder="5200"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="luga3_d1" placeholder="3000"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="luga3_d2" placeholder="4000"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="luga3_d3" placeholder="4700"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="luga3_d4" placeholder="4900"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="luga3_d5" placeholder="5000"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="luga3_d6" placeholder="5100"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="luga3_d7" placeholder="5200"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="luga3_r814" placeholder="700"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="luga3_r1521" placeholder="650"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="luga3_r814" placeholder="700"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="luga3_r1521" placeholder="650"></div>
     </div>
   </div>
 
-  <!-- Ð Ð°ÑÑ -->
+  <!-- Рафт -->
   <div class="section">
-    <div class="boat-name">ð Ð Ð°ÑÑ "ÐÐ»Ð°Ð½ÐµÑÐ° ÐÐ¾Ð´Ð° 4ÐÔÀñÍÁ¸±ÍÌô½ÐµÍÕûBBÃFF¬FB×BóBëBûBóBÿBïB×BëF¬FB×FBûBìð½ÍÁ¸øð½¥Øø(ñ¥Ø±ÍÌôäµ±°ÍÑå±ôÑáÐµ±¥¸é±ÐíµÉ¥¸µ½ÑÑ½´èÙÁàìûBB×B÷BÀBßBÀBÃFB×B÷BÓF£BBB¤°
-ôð½¥Øø(ñ¥Ø±ÍÌôåÌµÉ¥ø(ñ¥Ø±ÍÌôäµ±°øñ¥Ø±ÍÌôäµ±°øÄFFF¸ð½¥Øøñ¥¹ÁÕÐ±ÍÌôäµ¥¹ÁÕÐÑåÁô¹ÕµÈ¥ôÉÑ}ÄÁ±¡½±ÈôÔÀÀÀøð½¥Øø(ñ¥Ø±ÍÌôäµ±°øñ¥Ø±ÍÌôäµ±°øÈFFF¸ð½¥Øøñ¥¹ÁÕÐ±ÍÌôäµ¥¹ÁÕÐÑåÁ="number" id="raft_d2" placeholder="6000"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="raft_d3" placeholder="6600"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="raft_d4" placeholder="6700"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="raft_d5" placeholder="6800"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="raft_d6" placeholder="6900"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="raft_d7" placeholder="7000"></div>
+    <div class="boat-name">🛟 Рафт "Планета Вода Усигщ"<span class="boat-sub">�Рафт + ремкомплект + чехол</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
+    <div class="days-grid">
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="raft_d1" placeholder="5000"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="raft_d2" placeholder="6000"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="raft_d3" placeholder="6600"></div>div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="raft_d4" placeholder="6700"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="raft_d5" placeholder="6800"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="raft_d6" placeholder="6900"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="raft_d7" placeholder="7000"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="raft_r814" placeholder="1000"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="raft_r1521" placeholder="900"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="raft_r814" placeholder="1000"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="raft_r1521" placeholder="900"></div>
     </div>
   </div>
 
-  <!-- ÐÐ°ÐºÑÐ°ÑÑ -->
+  <!-- Пакрафт -->
   <div class="section">
-    <div class="boat-name">ð£ ÐÐ°ÐºÑÐ°ÑÑ Ð¾Ð´Ð½Ð¾Ð¼ÐµÑÑÐ½ÑÐ¹ <span class="boat-sub">ÐÐ°ÐºÑÐ°ÑÑ + ÑÐµÐ¼ÐºÐ¾Ð¼Ð¿Ð»ÐµÐºÑ + ÑÐµÑÐ¾Ð»</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🚣 Пакрафт одноместный <span class="boat-sub">Пакрафт + ремкомплект + чехол</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d1" placeholder="2000"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d2" placeholder="3500"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d3" placeholder="4000"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d4" placeholder="4200"></div>
-      <div class="day-cell"><div class="day-label">5 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d5" placeholder="4300"></div>
-      <div class="day-cell"><div class="day-label">6 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d6" placeholder="4400"></div>
-      <div class="day-cell"><div class="day-label">7 ÑÑÑ.</div><input class="day-input" type="number" id="packraft_d7" placeholder="4500"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="packraft_d1" placeholder="2000"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="packraft_d2" placeholder="3500"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="packraft_d3" placeholder="4000"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="packraft_d4" placeholder="4200"></div>
+      <div class="day-cell"><div class="day-label">5 сут.</div><input class="day-input" type="number" id="packraft_d5" placeholder="4300"></div>
+      <div class="day-cell"><div class="day-label">6 сут.</div><input class="day-input" type="number" id="packraft_d6" placeholder="4400"></div>
+      <div class="day-cell"><div class="day-label">7 сут.</div><input class="day-input" type="number" id="packraft_d7" placeholder="4500"></div>
     </div>
     <div class="rate-grid">
-      <div class="rate-cell"><div class="rate-label">8â14 Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="packraft_r814" placeholder="600"></div>
-      <div class="rate-cell"><div class="rate-label">15â21 Ð´ÐµÐ½Ñ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="packraft_r1521" placeholder="570"></div>
+      <div class="rate-cell"><div class="rate-label">8–14 дней / за сутки</div><input class="rate-input" type="number" id="packraft_r814" placeholder="600"></div>
+      <div class="rate-cell"><div class="rate-label">15–21 день / за сутки</div><input class="rate-input" type="number" id="packraft_r1521" placeholder="570"></div>
     </div>
   </div>
 
@@ -300,54 +302,54 @@
 </div><!-- /tab-boats -->
 
 
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ══════════════════════════════════════════════════════ -->
 <!-- SUPS TAB                                               -->
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <div id="tab-sups" class="tab-content">
 <div class="container">
 
-  <!-- Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ Ð¡Ð¢ÐÐÐÐÐ Ð¢ -->
+  <!-- Сапборд СТАНДАРТ -->
   <div class="section">
-    <div class="boat-name">ð Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ Ð¡Ð¢ÐÐÐÐÐ Ð¢ <span class="boat-sub">Ð¡ÐÐ + Ð²ÐµÑÐ»Ð¾ + Ð³ÐµÑÐ¼Ð¾Ð¼ÐµÑÐ¾Ðº + ÑÑÐºÐ·Ð°Ðº + Ð»Ð¸Ñ + Ð½Ð°ÑÐ¾Ñ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🏄 Сапборд СТАНДАРТ <span class="boat-sub">САП + весло + гермомешок + рюкзак + лиш + насос</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid-4">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="sup_std_d1" placeholder="1500"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="sup_std_d2" placeholder="2400"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="sup_std_d3" placeholder="2700"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="sup_std_d4" placeholder="2900"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="sup_std_d1" placeholder="1500"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="sup_std_d2" placeholder="2400"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="sup_std_d3" placeholder="2700"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="sup_std_d4" placeholder="2900"></div>
     </div>
     <div class="rate-grid" style="grid-template-columns:1fr;">
-      <div class="rate-cell"><div class="rate-label">5+ Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="sup_std_r5" placeholder="600"></div>
+      <div class="rate-cell"><div class="rate-label">5+ дней / за сутки</div><input class="rate-input" type="numbember" id="sup_std_r5" placeholder="600"></div>
     </div>
   </div>
 
-  <!-- Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ Ð¢ÐÐÐÐÐ -->
+  <!-- Сапборд ТАНДЕМ -->
   <div class="section">
-    <div class="boat-name">ð Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ Ð¢ÐÐÐÐÐ <span class="boat-sub">Ð¡ÐÐ + 2 Ð²ÐµÑÐ»Ð° + 2 Ð³ÐµÑÐ¼Ð¾Ð¼ÐµÑÐºÐ° + ÑÑÐºÐ·Ð°Ðº + Ð»Ð¸Ñ + Ð½Ð°ÑÐ¾Ñ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🏄 Сапборд ТАНДЕМ <span class="boat-sub">САП + 2 весла + 2 гермомешка + рюкзак + лиш + насос</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid-4">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="sup_tan_d1" placeholder="2500"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="sup_tan_d2" placeholder="3500"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="sup_tan_d3" placeholder="4000"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="sup_tan_d4" placeholder="4500"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="sup_tan_d1" placeholder="2500"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="sup_tan_d2" placeholder="3500"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="sup_tan_d3" placeholder="4000"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="sup_tan_d4" placeholder="4500"></div>
     </div>
     <div class="rate-grid" style="grid-template-columns:1fr;">
-      <div class="rate-cell"><div class="rate-label">5+ Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="sup_tan_r5" placeholder="950"></div>
+      <div class="rate-cell"><div class="rate-label">5+ дней / за сутки</div><input class="rate-input" type="number" id="sup_tan_r5" placeholder="950"></div>
     </div>
   </div>
 
-  <!-- Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ ÐÐ ÐÐÐÐ£Ð -->
+  <!-- Сапборд ПРЕМИУМ -->
   <div class="section">
-    <div class="boat-name">ð Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´ ÐÐ ÐÐÐÐ£Ð <span class="boat-sub">Ð¡ÐÐ + Ð²ÐµÑÐ»Ð¾ + Ð³ÐµÑÐ¼Ð¾Ð¼ÐµÑÐ¾Ðº + ÑÑÐºÐ·Ð°Ðº + Ð»Ð¸Ñ + Ð½Ð°ÑÐ¾Ñ</span></div>
-    <div class="day-label" style="text-align:left;margin-bottom:6px;">Ð¦ÐµÐ½Ð° Ð·Ð° Ð°ÑÐµÐ½Ð´Ñ (Ð Ð Ð¦), â½</div>
+    <div class="boat-name">🏄 Сапборд ПРЕМИУМ <span class="boat-sub">САП + весло + гермомешок + рюкзак + лиш + насос</span></div>
+    <div class="day-label" style="text-align:left;margin-bottom:6px;">Цена за аренду (РРЦ), ₽</div>
     <div class="days-grid-4">
-      <div class="day-cell"><div class="day-label">1 ÑÑÑ.</div><input class="day-input" type="number" id="sup_pre_d1" placeholder="3000"></div>
-      <div class="day-cell"><div class="day-label">2 ÑÑÑ.</div><input class="day-input" type="number" id="sup_pre_d2" placeholder="4500"></div>
-      <div class="day-cell"><div class="day-label">3 ÑÑÑ.</div><input class="day-input" type="number" id="sup_pre_d3" placeholder="5500"></div>
-      <div class="day-cell"><div class="day-label">4 ÑÑÑ.</div><input class="day-input" type="number" id="sup_pre_d4" placeholder="6500"></div>
+      <div class="day-cell"><div class="day-label">1 сут.</div><input class="day-input" type="number" id="sup_pre_d1" placeholder="3000"></div>
+      <div class="day-cell"><div class="day-label">2 сут.</div><input class="day-input" type="number" id="sup_pre_d2" placeholder="4500"></div>
+      <div class="day-cell"><div class="day-label">3 сут.</div><input class="day-input" type="number" id="sup_pre_d3" placeholder="5500"></div>
+      <div class="day-cell"><div class="day-label">4 сут.</div><input class="day-input" type="number" id="sup_pre_d4" placeholder="6500"></div>
     </div>
     <div class="rate-grid" style="grid-template-columns:1fr;">
-      <div class="rate-cell"><div class="rate-label">5+ Ð´Ð½ÐµÐ¹ / Ð·Ð° ÑÑÑÐºÐ¸</div><input class="rate-input" type="number" id="sup_pre_r5" placeholder="1500"></div>
+      <div class="rate-cell"><div class="rate-label">5+ дней / за сутки</div><input class="rate-input" type="number" id="sup_pre_r5" placeholder="1500"></div>
     </div>
   </div>
 
@@ -355,55 +357,55 @@
 </div><!-- /tab-sups -->
 
 
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <!-- ACCESSORIES TAB                                        -->
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <div id="tab-accs" class="tab-content">
 <div class="container">
   <div class="section">
-    <div class="section-title">ð ÐÐºÑÐµÑÑÑÐ°ÑÑ â ÑÐµÐ½Ð° Ð·Ð° 7 Ð´Ð½ÐµÐ¹ (Ð Ð Ð¦)</div>
+    <div class="section-title">🎒 Аксессуары — цена за 7 дней (РРЦ)</div>
     <div class="price-row">
-      <div class="price-label">ÐÐµÑÐ»Ð¾ Ð±Ð°Ð¹Ð´Ð°ÑÐ¾ÑÐ½Ð¾Ðµ</div>
+      <div class="price-label">Весло байдарочное</div>
       <input class="price-input" type="number" id="veslo_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¡Ð¿Ð°Ñ Ð¶Ð¸Ð»ÐµÑ</div>
+      <div class="price-label">Спас жилет</div>
       <input class="price-input" type="number" id="zhilet_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐµÑÐ¼Ð¾Ð¼ÐµÑÐ¾Ðº 80Ð»</div>
+      <div class="price-label">Гермомешок 80л</div>
       <input class="price-input" type="number" id="germe80_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°ÑÐ¾Ñ Ð»ÑÐ³ÑÑÐºÐ°</div>
+      <div class="price-label">Насос лягушка</div>
       <input class="price-input" type="number" id="nasos_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¨Ð»ÐµÐ¼</div>
+      <div class="price-label">Шлем</div>
       <input class="price-input" type="number" id="shlem_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð Ð°ÑÐ¸Ñ</div>
+      <div class="price-label">Рация</div>
       <input class="price-input" type="number" id="racia_p" placeholder="500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¤Ð°ÑÑÑÐº + ÑÐ±ÐºÐ¸ Ð¨3<div class="price-sub">ÐÐ»Ñ Ð¨ÑÑ-3</div></div>
+      <div class="price-label">Фартук + юбки Ш3<div class="price-sub">Для Шуя-3</div></div>
       <input class="price-input" type="number" id="fartuk3_p" placeholder="1500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¤Ð°ÑÑÑÐº + ÑÐ±ÐºÐ¸ Ð¨2<div class="price-sub">ÐÐ»Ñ Ð¨ÑÑ-2</div></div>
+      <div class="price-label">Фартук + юбки Ш2<div class="price-sub">Для Шуя-2</div></div>
       <input class="price-input" type="number" id="fartuk2_p" placeholder="1300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¤Ð°ÑÑÑÐº + ÑÐ±ÐºÐ° Ð¨1<div class="price-sub">ÐÐ»Ñ Ð¨ÑÑ-1</div></div>
+      <div class="price-label">Фартук + юбка Ш1<div class="price-sub">Для Шуя-1</div></div>
       <input class="price-input" type="number" id="fartuk1_p" placeholder="1000">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°ÑÐ¾Ñ ÑÐ»ÐµÐºÑÑÐ¸ÑÐµÑÐºÐ¸Ð¹ Ð°ÐºÐºÑÐ¼.</div>
+      <div class="price-label">Насос электрический аккум.</div>
       <input class="price-input" type="number" id="nasos_el_p" placeholder="600">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐµÑÐ¼Ð¾Ð¼ÐµÑÐºÐ¸ 10Ð»</div>
+      <div class="price-label">Гермомешки 10л</div>
       <input class="price-input" type="number" id="germe10_p" placeholder="200">
     </div>
   </div>
@@ -411,137 +413,140 @@
 </div><!-- /tab-accs -->
 
 
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <!-- CAMPING TAB                                            -->
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <div id="tab-kemp" class="tab-content">
 <div class="container">
   <div class="section">
-    <div class="section-title">ð ÐÐµÐ¼Ð¿Ð¸Ð½Ð³ â ÑÐµÐ½Ð° Ð·Ð° 7 Ð´Ð½ÐµÐ¹ (Ð Ð Ð¦)</div>
+    <div class="section-title">🏕 Кемпинг — цена за 7 дней (РРЦ)</div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°Ð»Ð°ÑÐºÐ° 3-4Ñ Ð¼ÐµÑÑÐ½Ð°Ñ</div>
+      <div class="price-label">Палатка 3-4х местная</div>
       <input class="price-input" type="number" id="palatka_p" placeholder="1500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð ÑÐºÐ·Ð°Ðº ÑÑÑÐ¸ÑÑÐ¸ÑÐµÑÐºÐ¸Ð¹</div>
+      <div class="price-label">Рюкзак туристический</div>
       <input class="price-input" type="number" id="ryukzak_p" placeholder="1500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¡Ð¿Ð°Ð»ÑÐ½ÑÐ¹ Ð¼ÐµÑÐ¾Ðº</div>
+      <div class="price-label">Спальный мешок</div>
       <input class="price-input" type="number" id="spalnyi_p" placeholder="750">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐºÐ»Ð°Ð´ÑÑ Ð² ÑÐ¿Ð°Ð»ÑÐ½Ð¸Ðº</div>
+      <div class="price-label">Вкладыш в спальник</div>
       <input class="price-input" type="number" id="vkladysh_p" placeholder="200">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐµÐ½ÐºÐ° (ÐºÐ¾Ð²ÑÐ¸Ðº Ð´Ð»Ñ ÑÐ½Ð°)</div>
+      <div class="price-label">Пенка (коврик для сна)</div>
       <input class="price-input" type="number" id="penka_sn_p" placeholder="250">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐµÐ½ÐºÐ° (ÐºÐ¾Ð²ÑÐ¸Ðº Ð´Ð»Ñ ÑÐ¸Ð´ÐµÐ½Ð¸Ñ)</div>
+      <div class="price-label">Пенка (коврик для сидения)</div>
       <input class="price-input" type="number" id="penka_sid_p" placeholder="200">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð²ÑÐ¸Ðº ÑÐ°Ð¼Ð¾Ð½Ð°Ð´ÑÐ²Ð½Ð¾Ð¹ 1-Ð¼ÐµÑÑÐ½ÑÐ¹</div>
+      <div class="price-label">Коврик самонадувной 1-местный</div>
       <input class="price-input" type="number" id="kovrik1_p" placeholder="500">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð²ÑÐ¸Ðº ÑÐ°Ð¼Ð¾Ð½Ð°Ð´ÑÐ²Ð½Ð¾Ð¹ 2-Ð¼ÐµÑÑÐ½ÑÐ¹</div>
+      <div class="price-label">Коврик самонадувной 2-местный</div>
       <input class="price-input" type="number" id="kovrik2_p" placeholder="800">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°Ð½Ñ ÐÐÐÐÐÐ ÐÐ-10 Ð3<div class="price-sub">Ð¨Ð°ÑÑÑ + Ð¿ÐµÑÐºÐ° + Ð·Ð°ÑÐ¸ÑÐ° Ð¾Ñ Ð¸ÑÐºÑ</div></div>
+      <div class="price-label">Баня МОБИБА МБ-10 М3<div class="price-sub">Шатёр + печка + защита от искр</div></div>
       <input class="price-input" type="number" id="banya_p" placeholder="5000">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°Ð»Ð°ÑÐºÐ°-Ð´ÑÑ</div>
+      <div class="price-label">Палатка-душ</div>
       <input class="price-input" type="number" id="dush_p" placeholder="600">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¢ÐµÐ½Ñ 3Ã4</div>
+      <div class="price-label">Тент 3×4</div>
       <input class="price-input" type="number" id="tent34_p" placeholder="1500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¨Ð°ÑÑÑ 3Ã3 + ÑÑÐ¸ ÑÑÐµÐ½ÐºÐ¸</div>
+      <div class="price-label">Шатёр 3×3 + три стенки</div>
       <input class="price-input" type="number" id="shatyr33_p" placeholder="3500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¡ÑÐ¾Ð» ÑÑÑÑÐ¸ÑÑÐ¸ÑÐµÑÐºÐ¸Ð¹ ÑÐºÐ»Ð°Ð´Ð½Ð¾Ð¹</div>
+      <div class="price-label">Стол туристический складной</div>
       <input class="price-input" type="number" id="stol_p" placeholder="500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¡ÑÑÐ» AÐ½ÑÐ¸ÑÑÐ¸ÑÐµÑÐºÐ¸Ð¹ SKÐ»Ð°Ð´Ð½Ð¾Ð¹</div>
+      <div class="price-label">Стул туристический складной</div>
       <input class="price-input" type="number" id="stul_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ°Ð½ 3â12Ð»</div>
+      <div class="price-label">Кан 3–12л</div>
       <input class="price-input" type="number" id="kan_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾ÑÐµÐ»ÐºÐ° Ð³Ð°Ð·Ð¾Ð²Ð°Ñ</div>
-      <input class="price-input" type="number" id="gorilka_p" placeholder="300">
+      <div class="price-label">Горелка газовая</div>
+      <input class="price-input" type="number" id="gorelka_p" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð¢Ð°Ð±ÑÑÐµÑÐºÐ° ÑÐºÐ»Ð°Ð´Ð½Ð°Ñ</div>
+      <div class="price-label">Табуретка складная</div>
       <input class="price-input" type="number" id="taburetka_p" placeholder="200">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð£Ð¼ÑÐ²Ð°Ð»ÑÐ½Ð¸Ðº</div>
+      <div class="price-label">Умывальник</div>
       <input class="price-input" type="number" id="umyvalnik_p" placeholder="450">
     </div>
-  !-- /tab-kemp -->
+  </div>
+</div>
+</div><!-- /tab-kemp -->
 
 
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <!-- SERVICES TAB                                           -->
-<!-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ═══════════════════════════════════════════════════════ -->
 <div id="tab-svcs" class="tab-content">
 <div class="container">
 
   <div class="section">
-    <div class="section-title">ð¨ 
-4,t/´`4.´,È4(4,4-ô,t/´`4.´,4,t,4.t-4,4`4/´.Ù]]Û\ÜÏHXÙK\ÝÈ]Û\ÜÏHXÙK[X[´(uì4/´`4.´,4,t,4.t-4,4`4/´.]Û\ÜÏHXÙK\ÝX¶ÞÐ·Ð° 1 Ð±Ð°Ð¹Ð´Ð°ÑÐºÑ</d±Ð°Ð¹Ð´Ð°ÑÐºÑ</div></div>
+    <div class="section-title">🔨 Сборка / Разборка байдарок</div>
+    <div class="price-row">
+      <div class="price-label">Сборка байдарок<div class="price-sub">за 1 байдарку</div></div>
       <input class="price-input" type="number" id="assemble_kd" placeholder="500">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð Ð°Ð·Ð±Ð¾ÑÐºÐ° Ð±Ð°Ð¹Ð´Ð°ÑÐ¾Ðº<div class="price-sub">Ð·Ð° 1 Ð±Ð°Ð¹Ð´Ð°ÑÐºÑ</div></div>
+      <div class="price-label">Разборка байдарок<div class="price-sub">за 1 байдарку</div></div>
       <input class="price-input" type="number" id="disassemble_kd" placeholder="500">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð¹ÐºÐ°/ÑÑÑÐºÐ° Ð±Ð°Ð¹Ð´Ð°ÑÐ¾Ðº<div class="price-sub">Ð·Ð° 1 Ð±Ð°Ð¹Ð´Ð°ÑÐºÑ</div></div>
+      <div class="price-label">Мойка/сушка байдарок<div class="price-sub">за 1 байдарку</div></div>
       <input class="price-input" type="number" id="wash_kd" placeholder="600">
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">ð Ð¡Ð±Ð¾ÑÐºÐ° / Ð Ð°Ð·Ð±Ð¾ÑÐºÐ° ÑÐ°Ð¿Ð±Ð¾ÑÐ´Ð¾Ð²</div>
+    <div class="section-title">🏄 Сборка / Разборка сапбордов</div>
     <div class="price-row">
-      <div class="price-label">Ð¡Ð±Ð¾ÑÐºÐ° ÑÐ°Ð¿Ð±Ð¾ÑÐ´Ð¾Ð²<div class="price-sub">Ð·Ð° 1 ÑÐ°Ð¿</div></div>
+      <div class="price-label">Сборка сапбордов<div class="price-sub">за 1 сап</div></div>
       <input class="price-input" type="number" id="assemble_sup" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð Ð°Ð·Ð±Ð¾ÑÐºÐ° ÑÐ°Ð¿Ð±Ð¾ÑÐ´Ð¾Ð²<div class="price-sub">Ð·Ð° 1 ÑÐ°Ð¿</div></div>
+      <div class="price-label">Разборка сапбордов<div class="price-sub">за 1 сап</div></div>
       <input class="price-input" type="number" id="disassemble_sup" placeholder="300">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð¹ÐºÐ°/ÑÑÑÐºÐ° ÑÐ°Ð¿Ð±Ð¾ÑÐ´Ð¾Ð²<div class="price-sub">Ð·Ð° 1 ÑÐ°Ð¿</div></div>
+      <div class="price-label">Мойка/сушка сапбордов<div class="price-sub">за 1 сап</div></div>
       <input class="price-input" type="number" id="wash_sup" placeholder="300">
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">ð§¹ ÐÑÐ¾ÑÐ¸Ðµ ÑÑÐ»ÑÐ³Ð¸</div>
+    <div class="section-title">🧹 Прочие услуги</div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð¹ÐºÐ°/ÑÑÑÐºÐ° Ð¿Ð°Ð»Ð°ÑÐºÐ¸</div>
+      <div class="price-label">Мойка/сушка палатки</div>
       <input class="price-input" type="number" id="wash_palatka" placeholder="800">
     </div>
     <div class="price-row">
-      <div class="price-label">ÐÐ¾Ð¹ÐºÐ°/ÑÑÑÐºÐ° ÑÐ¿Ð°Ð»ÑÐ½Ð¸ÐºÐ°</div>
+      <div class="price-label">Мойка/сушка спальника</div>
       <input class="price-input" type="number" id="wash_spalnyi" placeholder="600">
     </div>
     <div class="price-row">
-      <div class="price-label">Ð Ð°Ð·Ð³ÑÑÐ·ÐºÐ° Ð±Ð°Ð¹Ð´Ð°ÑÐ¾Ðº<div class="price-sub">Ð¾Ñ 100 Ð¼ Ð¾Ñ Ð¼Ð°ÑÐ¸Ð½Ñ</div></div>
+      <div class="price-label">Разгрузка байдарок<div class="price-sub">от 100 м от машины</div></div>
       <input class="price-input" type="number" id="unload_far" placeholder="500">
     </div>
   </div>
@@ -550,12 +555,12 @@
 </div><!-- /tab-svcs -->
 
 
-<!-- ââ STICKY BOTTOM BUTTONS âââ -->
+<!-- ─── STICKY BOTTOM BUTTONS ─── -->
 <div class="sticky-bottom">
-  <button class="btn-save" onclick="savePrices()">ð¾ Ð¡Ð¾ÑÑÐ°Ð½Ð¸ÑÑ Ð²ÑÐµ ÑÐµÐ½Ñ</button>
+  <button class="btn-save" onclick="savePrices()">💾 Сохранить все цены</button>
   <div class="btn-row">
-    <a href="../index.html" class="btn-back">â ÐÐ°Ð»ÑÐºÑÐ»ÑÑÐ¾Ñ</a>
-    <button class="btn-reset" onclick="resetPrices()">â©ï¸ Ð¡Ð±ÑÐ¾Ñ</button>
+    <a href="../index.html" class="btn-back">← Калькулятор</a>
+    <button class="btn-reset" onclick="resetPrices()">↩️ Сброс</button>
   </div>
 </div>
 
@@ -565,44 +570,44 @@
   const STORAGE_KEY = 't365_admin_prices';
 
   const DEFAULTS = {
-    // ââ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-3 ââ
+    // ── Байдарка Шуя-3 ──
     shuya3_d1:3500, shuya3_d2:4500, shuya3_d3:5300, shuya3_d4:5400,
     shuya3_d5:5500, shuya3_d6:5600, shuya3_d7:5700,
     shuya3_r814:820, shuya3_r1521:800,
-    // ââ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-2 ââ
+    // ── Байдарка Шуя-2 ──
     shuya2_d1:3000, shuya2_d2:4000, shuya2_d3:4700, shuya2_d4:4900,
     shuya2_d5:5000, shuya2_d6:5100, shuya2_d7:5200,
     shuya2_r814:700, shuya2_r1521:650,
-    // ââ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° Ð¨ÑÑ-1 ââ
+    // ── Байдарка Шуя-1 ──
     shuya1_d1:2500, shuya1_d2:3500, shuya1_d3:4000, shuya1_d4:4200,
     shuya1_d5:4300, shuya1_d6:4400, shuya1_d7:4500,
     shuya1_r814:600, shuya1_r1521:570,
-    // ââ ÐÐ°Ð¹Ð´Ð°ÑÐºÐ° ÐÑÐ³Ð°-3 ââ
+    // ── Байдарка Луга-3 ──
     luga3_d1:3000, luga3_d2:4000, luga3_d3:4700, luga3_d4:4900,
     luga3_d5:5000, luga3_d6:5100, luga3_d7:5200,
     luga3_r814:700, luga3_r1521:650,
-    // ââ Ð Ð°ÑÑ ââ
+    // ── Рафт ──
     raft_d1:5000, raft_d2:6000, raft_d3:6600, raft_d4:6700,
     raft_d5:6800, raft_d6:6900, raft_d7:7000,
     raft_r814:1000, raft_r1521:900,
-    // ââ ÐÐ°ÐºÑÐ°ÑÑ ââ
+    // ── Пакрафт ──
     packraft_d1:2000, packraft_d2:3500, packraft_d3:4000, packraft_d4:4200,
     packraft_d5:4300, packraft_d6:4400, packraft_d7:4500,
     packraft_r814:600, packraft_r1521:570,
-    // ââ Ð¡Ð°Ð¿Ð±Ð¾ÑÐ´Ñ ââ
+    // ── Сапборды ──
     sup_std_d1:1500, sup_std_d2:2400, sup_std_d3:2700, sup_std_d4:2900, sup_std_r5:600,
     sup_tan_d1:2500, sup_tan_d2:3500, sup_tan_d3:4000, sup_tan_d4:4500, sup_tan_r5:950,
     sup_pre_d1:3000, sup_pre_d2:4500, sup_pre_d3:5500, sup_pre_d4:6500, sup_pre_r5:1500,
-    // ââ ÐÐºÑÐµÑÑÑÐ°ÑÑ ââ
+    // ── Аксессуары ──
     veslo_p:300, zhilet_p:300, germe80_p:300, nasos_p:300, shlem_p:300,
     racia_p:500, fartuk3_p:1500, fartuk2_p:1300, fartuk1_p:1000,
     nasos_el_p:600, germe10_p:200,
-    // ââ ÐÐµÐ¼Ð¿Ð¸Ð½Ð³ ââ
-       palatka_p:1500, ryukzak_p:1500, spalnyi_p:750, vkladysh_p:200,
+    // ── Кемпинг ──
+    palatka_p:1500, ryukzak_p:1500, spalnyi_p:750, vkladysh_p:200,
     penka_sn_p:250, penka_sid_p:200, kovrik1_p:500, kovrik2_p:800,
     banya_p:5000, dush_p:600, tent34_p:1500, shatyr33_p:3500,
     stol_p:500, stul_p:300, kan_p:300, gorelka_p:300, taburetka_p:200, umyvalnik_p:450,
-    // ââ Ð£ÑÐ»ÑÐ³Ð¸ ââ
+    // ── Услуги ──
     assemble_kd:500, disassemble_kd:500, wash_kd:600,
     assemble_sup:300, disassemble_sup:300, wash_sup:300,
     wash_palatka:800, wash_spalnyi:600, unload_far:500,
@@ -610,7 +615,7 @@
 
   const FIELDS = Object.keys(DEFAULTS);
 
-  // ââ Tab system ââ
+  // ── Tab system ──
   function showTab(name) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -618,7 +623,7 @@
     event.target.classList.add('active');
   }
 
-  // ââ Load saved prices into fields ââ
+  // ── Load saved prices into fields ──
   function loadPrices() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -629,7 +634,7 @@
     } catch(e) {}
   }
 
-  // ââ Save all fields to localStorage ââ
+  // ── Save all fields to localStorage ──
   function savePrices() {
     const prices = {};
     FIELDS.forEach(id => {
@@ -637,15 +642,15 @@
       if (el && el.value !== '') prices[id] = parseFloat(el.value) || 0;
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prices));
-    showToast('â Ð¦ÐµÐ½Ñ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ñ!');
+    showToast('✅ Цены сохранены!');
   }
 
-  // ââ Reset to defaults ââ
+  // ── Reset to defaults ──
   function resetPrices() {
-    if (!confirm('Ð¡Ð±ÑÐ¾ÑÐ¸ÑÑ Ð²ÑÐµ ÑÐµÐ½Ñ Ðº ÑÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐ¼ Ð·Ð½Ð°ÑÐµÐ½Ð¸ÑÐ¼?')) return;
+    if (!confirm('Сбросить все цены к стандартным значениям?')) return;
     localStorage.removeItem(STORAGE_KEY);
     loadPrices();
-    showToast('â©ï¸ Ð¡Ð±ÑÐ¾ÑÐµÐ½Ð¾ Ðº ÑÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐ¼');
+    showToast('↩️ Сброшено к стандартным');
   }
 
   function showToast(msg) {
