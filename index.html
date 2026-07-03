@@ -715,6 +715,32 @@ const SVC_RATES = {
   disassemble_sup:{ per: 300, ids: SUP_IDS,   unit: 'сап'   },
   wash_sup:       { per: 300, ids: SUP_IDS,   unit: 'сап'   },
 };
+// ─── Загрузка цен из AdminPanel (localStorage) ───
+(function loadAdminPrices() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('t365_admin_prices') || '{}');
+    // Лодки: посуточные цены (d1..d7) и расширенные ставки
+    BOATS.forEach(b => {
+      for (let n = 1; n <= 7; n++) {
+        const v = saved[b.id + '_d' + n];
+        if (v !== undefined) b.prices[n - 1] = v;
+      }
+      if (saved[b.id + '_r814']  !== undefined) b.rate8_14  = saved[b.id + '_r814'];
+      if (saved[b.id + '_r1521'] !== undefined) b.rate15_21 = saved[b.id + '_r1521'];
+      if (saved[b.id + '_r5']    !== undefined) b.rate5plus = saved[b.id + '_r5'];
+    });
+    // Аксессуары и кемпинг: price7
+    [...ACCS, ...KEMP].forEach(item => {
+      if (saved[item.id + '_p'] !== undefined) item.price7 = saved[item.id + '_p'];
+    });
+    // Фиксированные цены услуг
+    SVCS.forEach(s => { if (saved[s.id] !== undefined) s.price = saved[s.id]; });
+    // Ставки услуг (per unit)
+    Object.keys(SVC_RATES).forEach(k => {
+      if (saved[k] !== undefined) SVC_RATES[k].per = saved[k];
+    });
+  } catch(e) {}
+})();
 function autoSvcPrice(svcId) {
   const r = SVC_RATES[svcId];
   if (!r) return 0;
