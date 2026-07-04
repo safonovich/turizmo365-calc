@@ -404,35 +404,41 @@ body {
   color: var(--primary);
   line-height: 1;
 }
+.btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
 .btn-copy {
-  width: 100%;
-  padding: 15px;
+  flex: 1;
+  padding: 10px 6px;
   background: linear-gradient(135deg, var(--primary), #1e40af);
   color: white;
   border: none;
-  border-radius: 16px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.2px;
   box-shadow: 0 4px 14px rgba(29,78,216,0.35);
   transition: opacity 0.15s;
+  white-space: nowrap;
 }
 .btn-copy:active { opacity: 0.88; }
 .btn-kp {
-  width: 100%;
-  padding: 13px;
+  flex: 1;
+  padding: 10px 6px;
   background: linear-gradient(135deg, #15803d, #16a34a);
   color: white;
   border: none;
-  border-radius: 16px;
-  font-size: 15px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.2px;
   box-shadow: 0 4px 14px rgba(22,163,74,0.35);
   transition: opacity 0.15s;
-  margin-top: 8px;
+  white-space: nowrap;
 }
 .btn-kp:active { opacity: 0.88; }
 .btn-reset {
@@ -484,7 +490,7 @@ body {
 
 /* ─── PRINT (КП) ─── */
 @media print {
-  @page { margin: 1.5cm; size: A4 portrait; }
+  @page { margin: 0; size: A4 portrait; }
   body > *:not(#kp-overlay) { display: none !important; }
   #kp-overlay {
     position: static !important;
@@ -495,7 +501,7 @@ body {
     box-shadow: none !important;
   }
   #kp-overlay .kp-toolbar { display: none !important; }
-  #kp-overlay > div { max-width: 100% !important; padding: 0 !important; }
+  #kp-overlay > div { max-width: 100% !important; padding: 1.5cm !important; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
@@ -679,8 +685,10 @@ body {
     </div>
     <div class="sticky-total" id="total-display">0 ₽</div>
   </div>
-  <button class="btn-copy" id="btn-copy-html" onclick="copyCalc()">📋 Скопировать расчёт</button>
-  <button class="btn-kp" id="btn-kp-html" onclick="generateKP()">📄 Сформировать КП</button>
+  <div class="btn-row">
+    <button class="btn-copy" id="btn-copy-html" onclick="copyCalc()">📋 Скопировать расчёт</button>
+    <button class="btn-kp" id="btn-kp-html" onclick="generateKP()">📄 Сформировать КП</button>
+  </div>
   <div style="text-align:center;margin-top:8px">
     <button class="btn-reset" onclick="resetAll()">Сбросить всё</button>
   </div>
@@ -715,17 +723,33 @@ const SVC_RATES = {
   disassemble_sup:{ per: 300, ids: SUP_IDS,   unit: 'сап'   },
   wash_sup:       { per: 300, ids: SUP_IDS,   unit: 'сап'   },
 };
+
 // ─── Загрузка цен из AdminPanel (localStorage) ───
 (function loadAdminPrices() {
   try {
     const saved = JSON.parse(localStorage.getItem('t365_admin_prices') || '{}');
+    // Лодки: посуточные цены (d1..d7) и расширенные ставки
+    BOATS.forEach(b => {
+      for (let n = 1; n <= 7; n++) {
+        const v = saved[b.id + '_d' + n];
+        if (v !== undefined) b.prices[n - 1] = v;
+      }
+      if (saved[b.id + '_r814']  !== undefined) b.rate8_14  = saved[b.id + '_r814'];
+      if (saved[b.id + '_r1521'] !== undefined) b.rate15_21 = saved[b.id + '_r1521'];
+      if (saved[b.id + '_r5']    !== undefined) b.rate5plus = saved[b.id + '_r5'];
+    });
+    // Аксессуары и кемпинг: price7
+    [...ACCS, ...KEMP].forEach(item => {
+      if (saved[item.id + '_p'] !== undefined) item.price7 = saved[item.id + '_p'];
+    });
+    // Фиксированные цены услуг
     SVCS.forEach(s => { if (saved[s.id] !== undefined) s.price = saved[s.id]; });
+    // Ставки услуг (per unit)
     Object.keys(SVC_RATES).forEach(k => {
       if (saved[k] !== undefined) SVC_RATES[k].per = saved[k];
     });
   } catch(e) {}
 })();
-
 function autoSvcPrice(svcId) {
   const r = SVC_RATES[svcId];
   if (!r) return 0;
@@ -780,7 +804,20 @@ const BOATS = [
   {
     id:'sup_std', cat:'boats',
     name:'Сапборд СТАНДАРТ',
-    sub:'САП + весло + гермомешок 5ЃB쀬�FF;B�B�B�B耬�B�B�F ���B�B�FB�F��(�����ɥ����l��������������������9ձ���ձ���ձ�t�(����Ʌє�����������Ʌє�|���ձ���Ʌє��|���ձ�(����(���(����������}х�������蝉���̜�(���������B�B�B�B�B�FBЃB�BCBwBSB{Bp��(�����Ո�B�BCB|���ȃB�B�FB�B����ȃB�B�FB�B�B�B�F#B�B����FF;B�B�B�B耬�B�B�F ���B�B�FB�F��(�����ɥ����l���������������������ձ���ձ���ձ�t�(����Ʌє�����������Ʌє�|���ձ���Ʌє��|���ձ�(����(���(����������}�ɔ������蝉���̜�(���������B�B�B�B�B�FBЃBBРЕМИУМ',
+    sub:'САП + весло + гермомешок 5л + рюкзак + лиш + насос',
+    prices:[1500,2400,2700,2900,null,null,null],
+    rate5plus:600, rate8_14:null, rate15_21:null
+  },
+  {
+    id:'sup_tan', cat:'boats',
+    name:'Сапборд ТАНДЕМ',
+    sub:'САП + 2 весла + 2 гермомешка + рюкзак + лиш + насос',
+    prices:[2500,3500,4000,4500,null,null,null],
+    rate5plus:950, rate8_14:null, rate15_21:null
+  },
+  {
+    id:'sup_pre', cat:'boats',
+    name:'Сапборд ПРЕМИУМ',
     sub:'САП + весло + гермомешок 5л + рюкзак + лиш + насос',
     prices:[3000,4500,5500,6500,null,null,null],
     rate5plus:1500, rate8_14:null, rate15_21:null
@@ -790,35 +827,35 @@ const BOATS = [
 // АКСЕССУАРЫ — цена за 7 дней аренды (РРЦ) / flat rate до 7 дней
 const ACCS = [
   { id:'veslo',    cat:'acc', name:'Весло байдарочное',           price7:300  },
-  { id:'zinlet',   cat:'acc', name:'Спас жилет',                   price7:300  },
+  { id:'zhilet',   cat:'acc', name:'Спас жилет',                  price7:300  },
   { id:'germe80',  cat:'acc', name:'Гермомешок 80л',              price7:300  },
   { id:'nasos',    cat:'acc', name:'Насос лягушка',               price7:300  },
   { id:'shlem',    cat:'acc', name:'Шлем',                        price7:300  },
   { id:'racia',    cat:'acc', name:'Рация',                       price7:500  },
-  { id:'fartuk3',  cat:'acc', name:'Фартук + юбки Ш3',  sub:'Оля Шуя-3', price7:1500 },
-  { id:'fartuk2',  cat:'acc', name:'Фартук + юбки К2',  sub:'Оля Шуя-2', price7:1300 },
-  { id:'fartuk1',  cat:'acc', name:'Фартук + юбка К1',  sub:'Оля Шуя-1', price7:1000 },
+  { id:'fartuk3',  cat:'acc', name:'Фартук + юбки Ш3',  sub:'Для Шуя-3', price7:1500 },
+  { id:'fartuk2',  cat:'acc', name:'Фартук + юбки Ш2',  sub:'Для Шуя-2', price7:1300 },
+  { id:'fartuk1',  cat:'acc', name:'Фартук + юбка Ш1',  sub:'Для Шуя-1', price7:1000 },
   { id:'nasos_el', cat:'acc', name:'Насос электрический аккум.',  price7:600  },
   { id:'germe10',  cat:'acc', name:'Гермомешки 10л',              price7:200  },
 ];
 
-// КЕМПИНГ — Іена за н дней `ренды РРЦ)
+// КЕМПИНГ — цена за 7 дней аренды (РРЦ)
 const KEMP = [
   { id:'palatka',    cat:'kemping', name:'Палатка 3-4х местная',          price7:1500 },
   { id:'ryukzak',    cat:'kemping', name:'Рюкзак туристический',          price7:1500 },
   { id:'spalnyi',    cat:'kemping', name:'Спальный мешок',                price7:750  },
-  { id:'vkladysh',   cat:'kemping', name:'Вкладыш  спальниъ',            price7:200  },
-  { id:'penka_sn',   cat:'kemping', name:'Пенка (коврик для с2na)',        price7:250  },
+  { id:'vkladysh',   cat:'kemping', name:'Вкладыш в спальник',            price7:200  },
+  { id:'penka_sn',   cat:'kemping', name:'Пенка (коврик для сна)',        price7:250  },
   { id:'penka_sid',  cat:'kemping', name:'Пенка (коврик для сидения)',    price7:200  },
   { id:'kovrik1',    cat:'kemping', name:'Коврик самонадувной 1-местный', price7:500  },
   { id:'kovrik2',    cat:'kemping', name:'Коврик самонадувной 2-местный', price7:800  },
-  { id:'banya',      cat:'kemping', name:'Баня МОБИБА МА-10 М3', sub:'Шатёр + печка + защита от искр', price7:5000 },
+  { id:'banya',      cat:'kemping', name:'Баня МОБИБА МБ-10 М3', sub:'Шатёр + печка + защита от искр', price7:5000 },
   { id:'dush',       cat:'kemping', name:'Палатка-душ',                   price7:600  },
   { id:'tent34',     cat:'kemping', name:'Тент 3×4',                      price7:1500 },
   { id:'shatyr33',   cat:'kemping', name:'Шатёр 3×3 + три стенки',       price7:3500 },
   { id:'stol',       cat:'kemping', name:'Стол туристический складной',   price7:500  },
   { id:'stul',       cat:'kemping', name:'Стул туристический складной',   price7:300  },
-  { id:'kan',        cat:'kemping', name:'Кан 0–12л',                     price7:300  },
+  { id:'kan',        cat:'kemping', name:'Кан 3–12л',                     price7:300  },
   { id:'gorelka',    cat:'kemping', name:'Горелка газовая',               price7:300  },
   { id:'taburetka',  cat:'kemping', name:'Табуретка складная',            price7:200  },
   { id:'umyvalnik',  cat:'kemping', name:'Умывальник',                    price7:450  },
@@ -835,9 +872,13 @@ const SVCS = [
   { id:'wash_sup',       name:'Мойка/сушка сапбордов',      desc:'300₽ / сап',                   price:null, tag:'🚿' },
   { id:'lager',         name:'Организация лагеря',         desc:'Палатки, шатры',               price:null, tag:'🏕' },
   { id:'wash_palatka',  name:'Мойка/сушка палатки',        desc:'При необходимости',             price:800,  tag:'🧹' },
-  { id:'unload_far',   name:'Разгрузка байдарок'              , desc:'от 100 м от машины',          price:500,  tag:'📦' },
-
-  { id:'custom', name:'', desc:'', price:null, tag:'✏️', isCustom:true },];
+  { id:'wash_spalnyi',  name:'Мойка/сушка спальника',      desc:'При необходимости',             price:600,  tag:'🧹' },
+  { id:'unload_far',   name:'Разгрузка байдарок',              desc:'от 100 м от машины',          price:500,  tag:'📦' },
+  { id:'instructor',   name:'Инструктор (сопровождение на воде)', desc:'Цена по договорённости', price:null, tag:'🏄' },
+  { id:'food',         name:'Еда',                             desc:'Питание и прочее',             price:null, tag:'🍽' },
+  { id:'custom',       name:'',                                desc:'',                             price:null, tag:'✏️', isCustom:true },
+  { id:'custom2',      name:'',                                desc:'',                             price:null, tag:'✏️', isCustom:true },
+];
 
 // Цена транспорта (из калькулятора)
 let transportPrice = 0;
@@ -854,6 +895,7 @@ let S = {
   svcs: {},
   svcPrices: {},
   customSvcName: '',
+  customSvcName2: '',
   // Поля калькулятора доставки
   dlv: {
     addrFrom: '',   // Откуда (база/склад)
@@ -926,7 +968,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'boats');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: b.name, qty, price: vp * qty });
+    lines.push({ name: b.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   ACCS.forEach(a => {
@@ -936,7 +978,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'acc');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: a.name, qty, price: vp * qty });
+    lines.push({ name: a.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   KEMP.forEach(k => {
@@ -946,7 +988,7 @@ function calcAll() {
     const vp = applyDisc(bp, 'kemping');
     base += bp * qty;
     total += vp * qty;
-    lines.push({ name: k.name, qty, price: vp * qty });
+    lines.push({ name: k.name, qty, price: vp * qty, unitPrice: vp });
   });
 
   SVCS.forEach(s => {
@@ -971,10 +1013,14 @@ function calcAll() {
       }
       return;
     }
-    // Кастомная услуга
+    // Кастомная услуга с произвольным названием и ценой
     if (s.isCustom) {
-      const cp = S.svcPrices['custom'] || 0;
-      if (cp > 0) { total += cp; base += cp; lines.push({ name: S.customSvcName || 'Своя услуга', qty: 1, price: cp }); }
+      const cp = S.svcPrices[s.id] || 0;
+      const cname = s.id === 'custom' ? (S.customSvcName || 'Своя услуга') : (S.customSvcName2 || 'Своя услуга');
+      if (cp > 0) {
+        total += cp; base += cp;
+        lines.push({ name: cname, qty: 1, price: cp });
+      }
       return;
     }
     // "Включено" services with editable price (lager, etc.)
@@ -1099,7 +1145,7 @@ function dlvCalcPanel() {
       <div class="svc-check ${d.withPickup?'on':''}"></div>
       <div class="svc-info">
         <div class="svc-name" style="font-size:13px">Включить забор снаряжения</div>
-        <div class="svc-desc">+1 день водителя, ×4 плеча вместп ×2</div>
+        <div class="svc-desc">+1 день водителя, ×4 плеча вместо ×2</div>
       </div>
     </div>
 
@@ -1147,13 +1193,13 @@ function renderServices() {
 
     // ── Кастомная услуга ──
     if (s.isCustom) {
-      const curName  = S.customSvcName || '';
-      const curPrice = S.svcPrices['custom'] || '';
-      const itemHtml = `<div class="svc-item" onclick="toggleSvc('custom')">
+      const curName  = (s.id === 'custom' ? S.customSvcName : S.customSvcName2) || '';
+      const curPrice = S.svcPrices[s.id] || '';
+      const itemHtml = `<div class="svc-item" onclick="toggleSvc('${s.id}')">
         <div class="svc-check ${on?'on':''}"></div>
         <div class="svc-info">
           <div class="svc-name">✏️ ${curName || 'Своя услуга'}</div>
-          <div class="svc-desc">${on && curPrice > 0 ? '<b style="color:var(--primary)">'+fmt(curPrice)+'</b>' : 'Введите название и цену'}</div>
+          <div class="svc-desc">${on && curPrice > 0 ? `<b style="color:var(--primary)">${fmt(curPrice)}</b>` : 'Введите название и цену'}</div>
         </div>
       </div>`;
       const expandHtml = on ? `<div class="svc-expand" style="display:block;padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;">
@@ -1162,14 +1208,14 @@ function renderServices() {
           <input type="text" class="dlv-input" style="width:100%;max-width:280px;"
             placeholder="Например: Аренда весел" value="${curName}"
             onclick="event.stopPropagation()"
-            oninput="setCustomName(this.value)">
+            oninput="setCustomName('${s.id}',this.value)">
         </div>
         <div>
           <div class="dlv-label" style="font-size:12px;margin-bottom:4px;">Стоимость, ₽</div>
           <input type="number" class="dlv-input" style="width:100%;max-width:180px;"
             placeholder="0" value="${curPrice}"
             onclick="event.stopPropagation()"
-            oninput="setSvcPrice('custom',this.value)">
+            oninput="setSvcPrice('${s.id}',this.value)">
         </div>
       </div>` : '';
       return itemHtml + expandHtml;
@@ -1217,8 +1263,9 @@ function renderServices() {
   }).join('');
 }
 
-function setCustomName(val) {
-  S.customSvcName = val.trim();
+function setCustomName(id, val) {
+  if (id === 'custom') S.customSvcName = val.trim();
+  else S.customSvcName2 = val.trim();
   updateTotals();
 }
 
@@ -1475,7 +1522,10 @@ function copyCalc() {
   const today = new Date().toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
 
   // Разделяем снаряжение и услуги
-  const svcNames = new Set(SVCS.map(s => s.name));
+  const svcNames = new Set([
+    ...SVCS.map(s => s.name).filter(Boolean),
+    S.customSvcName, S.customSvcName2,
+  ]);
   const equipLines = lines.filter(l => !svcNames.has(l.name));
   const svcLines   = lines.filter(l =>  svcNames.has(l.name));
   const equipTotal = equipLines.reduce((s, l) => s + l.price, 0);
@@ -1484,26 +1534,21 @@ function copyCalc() {
   let text = `🏕 TURIZMO 365 — Расчёт аренды\n`;
   text += `${'─'.repeat(28)}\n`;
   text += `📅 Дата составления: ${today}\n`;
-  if (S.dateFrom) {
-    const df = new Date(S.dateFrom).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
-    text += `📅 Начало аренды: ${df}\n`;
-  }
-  if (S.dateTo) {
-    const dt = new Date(S.dateTo).toLocaleDateString('ru-RU', {day:'2-digit',month:'long',year:'numeric'});
-    text += `📅 Конец аренды: ${dt}\n`;
-  } else {
-    text += `📅 Срок ${S.days} ${dayWord(S.days)}\n`;
-  }
-  text += `${'✀'.repeat(28)}\n`;
 
   // Блок снаряжения
   if (equipLines.length > 0) {
-    text += `📦 Cнаряжение:\n`;
-    equipLines.forEach(l => { text += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''} — ${fmt(l.price)}\n`; });
-    text += `  Итого снаряжения: ${fmt(equipTotal)}\n`;
+    text += `📦 Снаряжение:\n`;
+    equipLines.forEach(l => {
+      if (l.qty > 1 && l.unitPrice) {
+        text += `  • ${l.name} / ${fmt(l.unitPrice)} / ${l.qty} шт / ${fmt(l.price)}\n`;
+      } else {
+        text += `  • ${l.name} — ${fmt(l.price)}\n`;
+      }
+    });
+    text += `  Итого снаряжение: ${fmt(equipTotal)}\n`;
   }
 
-  // Блок Eслуг с реальными ценами
+  // Блок услуг с реальными ценами
   const activeSvcs = SVCS.filter(s => S.svcs[s.id]);
   if (activeSvcs.length > 0) {
     text += `\n🔧 Услуги:\n`;
@@ -1517,6 +1562,12 @@ function copyCalc() {
         text += `  • ${s.name}: ${ap > 0 ? fmt(ap) : '(включено)'}\n`;
         return;
       }
+      if (s.isCustom) {
+        const cname = s.id === 'custom' ? (S.customSvcName || 'Своя услуга') : (S.customSvcName2 || 'Своя услуга');
+        const cp = S.svcPrices[s.id] || 0;
+        if (cp > 0) text += `  • ${cname}: ${fmt(cp)}\n`;
+        return;
+      }
       if (s.price) { text += `  • ${s.name}: ${fmt(s.price)}\n`; return; }
       const ep = S.svcPrices[s.id] || 0;
       text += `  • ${s.name}: ${ep > 0 ? fmt(ep) : '(включено)'}\n`;
@@ -1526,7 +1577,6 @@ function copyCalc() {
 
   text += `${'─'.repeat(28)}\n`;
   text += `💰 ИТОГО: ${fmt(total)}`;
-  if (savings > 0 && S.vip !== 'ррц') text += `\n✅ Скидка: ${fmt(savings)}`;
 
   saveHistory();
   navigator.clipboard.writeText(text)
@@ -1641,12 +1691,14 @@ function generateKP() {
         ${S.dateTo ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Конец аренды</div>${new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Срок аренды</div>${dayText}</div>`}
       </div>
       <div style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
-        <div style="background:#f0f4f8;padding:10px 16px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">
-          <span>Позиция</span><span>Сумма</span>
+        <div style="background:#f0f4f8;padding:10px 16px;display:grid;grid-template-columns:1fr auto auto auto;gap:6px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">
+          <span>Позиция</span><span style="text-align:right;">Цена</span><span style="text-align:right;">Кол-во</span><span style="text-align:right;">Сумма</span>
         </div>
-        ${lines.map(l => `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;">
-          <span>${l.name}${l.qty > 1 ? ` ×${l.qty}` : ''}</span>
-          <span style="font-weight:600;white-space:nowrap;margin-left:12px;">${l.price.toLocaleString('ru-RU')} ₽</span>
+        ${lines.map(l => `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;">
+          <span>${l.name}</span>
+          <span style="color:#94a3b8;white-space:nowrap;font-size:12px;text-align:right;">${l.unitPrice ? l.unitPrice.toLocaleString('ru-RU') + ' ₽' : '—'}</span>
+          <span style="color:#64748b;white-space:nowrap;text-align:right;">${l.qty > 1 ? l.qty + ' шт' : (l.unitPrice ? '1 шт' : '—')}</span>
+          <span style="font-weight:600;white-space:nowrap;text-align:right;">${l.price.toLocaleString('ru-RU')} ₽</span>
         </div>`).join('')}
         ${savings > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#16a34a;">
           <span>Скидка</span><span style="font-weight:600;">−${savings.toLocaleString('ru-RU')} ₽</span>
@@ -1693,21 +1745,23 @@ function kpPrint() {
   const baseUrl = window.location.href.replace(/[^\/]+$/, '');
 
   // Строим строки таблицы
-  const itemRows = d.lines.map(l =>
-    `<tr><td>${l.name}${l.qty > 1 ? ' &times;' + l.qty : ''}</td><td>${l.price.toLocaleString('ru-RU')} ₽</td></tr>`
-  ).join('');
+  const itemRows = d.lines.map(l => {
+    const hasUnit = l.unitPrice;
+    return `<tr>
+      <td>${l.name}</td>
+      <td style="text-align:right;">${hasUnit ? l.unitPrice.toLocaleString('ru-RU') + ' ₽' : '—'}</td>
+      <td style="text-align:center;">${l.qty > 1 ? l.qty + ' шт.' : (hasUnit ? '1 шт.' : '—')}</td>
+      <td>${l.price.toLocaleString('ru-RU')} ₽</td>
+    </tr>`;
+  }).join('');
 
-  const discountRow = d.savings > 0
-    ? `<tr class="disc"><td>Скидка</td><td>&minus;${d.savings.toLocaleString('ru-RU')} ₽</td></tr>`
-    : '';
+  const discountRow = '';
 
   const df = d.dateFrom ? new Date(d.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
   const dt = d.dateTo   ? new Date(d.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '';
 
   const metaHtml = `
     <td><div class="mlabel">Дата составления</div><div>${d.today}</div></td>
-    ${df ? `<td><div class="mlabel">Начало аренды</div><div>${df}</div></td>` : ''}
-    ${dt ? `<td><div class="mlabel">Конец аренды</div><div>${dt}</div></td>` : (!df ? `<td><div class="mlabel">Срок аренды</div><div>${d.dayText}</div></td>` : '')}
   `;
 
   const printWin = window.open('', '_blank');
@@ -1738,6 +1792,10 @@ table.meta td { padding:0 20px 0 0; vertical-align:top; font-size:13px; }
 table.items { width:100%; border-collapse:collapse; }
 table.items thead tr { background:#f0f4f8; }
 table.items thead th { padding:8px 12px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; border:1px solid #e2e8f0; }
+table.items thead th:nth-child(2) { text-align:right; }
+table.items thead th:nth-child(3) { text-align:center; }
+table.items td:nth-child(2) { text-align:right; white-space:nowrap; color:#475569; }
+table.items td:nth-child(3) { text-align:center; }
 table.items thead th:last-child { text-align:right; }
 table.items td { padding:9px 12px; border:1px solid #e8edf3; font-size:13px; }
 table.items td:last-child { text-align:right; white-space:nowrap; font-weight:600; }
@@ -1759,11 +1817,11 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
 </div>
 <table class="meta"><tr>${metaHtml}</tr></table>
 <table class="items">
-  <thead><tr><th>Позиция</th><th style="text-align:right;">Сумма</th></tr></thead>
+  <thead><tr><th>Позиция</th><th style="text-align:right;">Цена за ед.</th><th>Кол-во</th><th style="text-align:right;">Сумма</th></tr></thead>
   <tbody>
     ${itemRows}
     ${discountRow}
-    <tr class="tot"><td>ИТОГО К ОПЛАТЕ</td><td>${d.total.toLocaleString('ru-RU')} ₽</td></tr>
+    <tr class="tot"><td colspan="3">ИТОГО К ОПЛАТЕ</td><td>${d.total.toLocaleString('ru-RU')} ₽</td></tr>
   </tbody>
 </table>
 <div class="foot">TURIZMO 365 · ${d.today}</div>
@@ -1907,7 +1965,7 @@ function closeDatePicker() {
 }
 
 // ════════════════════════════════════════════
-//  ИСТОРИя РАСЧСТОВ
+//  ИСТОРИЯ РАСЧЁТОВ
 // ════════════════════════════════════════════
 const HIST_KEY = 't365_history';
 const HIST_MAX = 10;
@@ -1971,7 +2029,7 @@ function openHistory() {
     itemsHtml = hist.map((e, i) => `
       <div class="hist-item">
         <div class="hist-item-info">
-          <div class="hist-item-date">${e.dateStr} ${e.timeStr} · ${fmtDates(e)}${e.days} ${e.days===1?'сутки':'суток'}|/div>
+          <div class="hist-item-date">${e.dateStr} ${e.timeStr} · ${fmtDates(e)}${e.days} ${e.days===1?'сутки':'суток'}</div>
           <div class="hist-item-total">${fmt(e.total)}</div>
           <div class="hist-item-summary">${e.summary}</div>
         </div>
