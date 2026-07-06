@@ -1696,8 +1696,8 @@ function generateKP() {
         </div>
         ${lines.map(l => `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;">
           <span>${l.name}</span>
-          <span style="color:#94a3b8;white-space:nowrap;font-size:12px;text-align:right;">${l.unitPrice ? l.unitPrice.toLocaleString('ru-RU') + ' ₽' : '—'}</span>
-          <span style="color:#64748b;white-space:nowrap;text-align:right;">${l.qty > 1 ? l.qty + ' шт' : (l.unitPrice ? '1 шт' : '—')}</span>
+          <span style="color:#94a3b8;white-space:nowrap;font-size:12px;text-align:right;">${(l.unitPrice || l.price).toLocaleString('ru-RU')} ₽</span>
+          <span style="color:#64748b;white-space:nowrap;text-align:right;">${l.qty > 1 ? l.qty + ' шт' : '1 шт'}</span>
           <span style="font-weight:600;white-space:nowrap;text-align:right;">${l.price.toLocaleString('ru-RU')} ₽</span>
         </div>`).join('')}
         ${savings > 0 ? `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:14px;color:#16a34a;">
@@ -1749,7 +1749,7 @@ function kpPrint() {
     const hasUnit = l.unitPrice;
     return `<tr>
       <td>${l.name}</td>
-      <td style="text-align:right;">${hasUnit ? l.unitPrice.toLocaleString('ru-RU') + ' ₽' : '—'}</td>
+      <td style="text-align:right;">${(l.unitPrice || l.price).toLocaleString('ru-RU')} ₽</td>
       <td style="text-align:center;">${l.qty > 1 ? l.qty + ' шт.' : (hasUnit ? '1 шт.' : '—')}</td>
       <td>${l.price.toLocaleString('ru-RU')} ₽</td>
     </tr>`;
