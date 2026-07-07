@@ -1006,10 +1006,13 @@ function calcAll() {
     }
     // auto-calculated per-unit services (assembly/wash kayaks & SUPs)
     if (SVC_RATES[s.id]) {
-      const ap = autoSvcPrice(s.id);
+      const r = SVC_RATES[s.id];
+      let n = 0;
+      BOATS.forEach(b => { if (r.ids.has(b.id)) n += (S.qty[b.id] || 0); });
+      const ap = n * r.per;
       if (ap > 0) {
         total += ap; base += ap;
-        lines.push({ name: s.name, qty: 1, price: ap });
+        lines.push({ name: s.name, qty: n, price: ap, unitPrice: r.per });
       }
       return;
     }
@@ -1550,7 +1553,9 @@ function copyCalc() {
   if (svcLines.length > 0) {
     text += `\n🔧 Услуги:\n`;
     svcLines.forEach(l => {
-      text += `  • ${l.name} / 1 шт / ${fmt(l.price)} / ${fmt(l.price)}\n`;
+      const qty = l.qty > 1 ? l.qty + ' шт' : '1 шт';
+      const unitP = l.unitPrice ? fmt(l.unitPrice) : fmt(l.price);
+      text += `  • ${l.name} / ${qty} / ${unitP} / ${fmt(l.price)}\n`;
     });
     if (svcTotal > 0) text += `  Итого услуги: ${fmt(svcTotal)}\n`;
   }
