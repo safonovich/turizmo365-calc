@@ -1539,38 +1539,18 @@ function copyCalc() {
   if (equipLines.length > 0) {
     text += `📦 Снаряжение:\n`;
     equipLines.forEach(l => {
-      if (l.qty > 1 && l.unitPrice) {
-        text += `  • ${l.name} / ${fmt(l.unitPrice)} / ${l.qty} шт / ${fmt(l.price)}\n`;
-      } else {
-        text += `  • ${l.name} — ${fmt(l.price)}\n`;
-      }
+      const qty = l.qty > 1 ? l.qty + ' шт' : '1 шт';
+      const unitP = l.unitPrice ? fmt(l.unitPrice) : fmt(l.price);
+      text += `  • ${l.name} / ${qty} / ${unitP} / ${fmt(l.price)}\n`;
     });
     text += `  Итого снаряжение: ${fmt(equipTotal)}\n`;
   }
 
-  // Блок услуг с реальными ценами
-  const activeSvcs = SVCS.filter(s => S.svcs[s.id]);
-  if (activeSvcs.length > 0) {
+  // Блок услуг
+  if (svcLines.length > 0) {
     text += `\n🔧 Услуги:\n`;
-    activeSvcs.forEach(s => {
-      if (s.hasCalc) {
-        if (transportPrice > 0) text += `  • ${s.name}: ${fmt(transportPrice)}\n`;
-        return;
-      }
-      if (SVC_RATES[s.id]) {
-        const ap = autoSvcPrice(s.id);
-        text += `  • ${s.name}: ${ap > 0 ? fmt(ap) : '(включено)'}\n`;
-        return;
-      }
-      if (s.isCustom) {
-        const cname = s.id === 'custom' ? (S.customSvcName || 'Своя услуга') : (S.customSvcName2 || 'Своя услуга');
-        const cp = S.svcPrices[s.id] || 0;
-        if (cp > 0) text += `  • ${cname}: ${fmt(cp)}\n`;
-        return;
-      }
-      if (s.price) { text += `  • ${s.name}: ${fmt(s.price)}\n`; return; }
-      const ep = S.svcPrices[s.id] || 0;
-      text += `  • ${s.name}: ${ep > 0 ? fmt(ep) : '(включено)'}\n`;
+    svcLines.forEach(l => {
+      text += `  • ${l.name} / 1 шт / ${fmt(l.price)} / ${fmt(l.price)}\n`;
     });
     if (svcTotal > 0) text += `  Итого услуги: ${fmt(svcTotal)}\n`;
   }
