@@ -1794,10 +1794,10 @@ table.meta td { padding:0 20px 0 0; vertical-align:top; font-size:13px; }
 table.items { width:100%; border-collapse:collapse; }
 table.items thead tr { background:#f0f4f8; }
 table.items thead th { padding:8px 12px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; border:1px solid #e2e8f0; }
-table.items thead th:nth-child(2) { text-align:right; }
-table.items thead th:nth-child(3) { text-align:center; }
-table.items td:nth-child(2) { text-align:right; white-space:nowrap; color:#475569; }
-table.items td:nth-child(3) { text-align:center; }
+table.items thead th:nth-child(2) { text-align:center; }
+table.items thead th:nth-child(3) { text-align:right; }
+table.items td:nth-child(2) { text-align:center; }
+table.items td:nth-child(3) { text-align:right; white-space:nowrap; color:#475569; }
 table.items thead th:last-child { text-align:right; }
 table.items td { padding:9px 12px; border:1px solid #e8edf3; font-size:13px; }
 table.items td:last-child { text-align:right; white-space:nowrap; font-weight:600; }
@@ -1819,7 +1819,7 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
 </div>
 <table class="meta"><tr>${metaHtml}</tr></table>
 <table class="items">
-  <thead><tr><th>Позиция</th><th style="text-align:right;">Цена за ед.</th><th>Кол-во</th><th style="text-align:right;">Сумма</th></tr></thead>
+  <thead><tr><th>Позиция</th><th>Кол-во</th><th style="text-align:right;">Цена за ед.</th><th style="text-align:right;">Сумма</th></tr></thead>
   <tbody>
     ${itemRows}
     ${discountRow}
