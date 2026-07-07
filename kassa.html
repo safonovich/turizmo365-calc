@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Касса ТУРИЗМО 365</title>
+<style>
+  :root{
+    --bg:#0f1720; --card:#1a2530; --card2:#212f3d; --text:#eef4f8; --muted:#8fa3b3;
+    --green:#2ecc71; --green-d:#1f8f4d; --red:#e74c3c; --red-d:#a33025;
+    --accent:#3498db; --amber:#f1c40f; --line:#2c3e50; --r:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); padding-bottom:90px}
+  .wrap{max-width:560px; margin:0 auto; padding:12px}
+  header{display:flex; align-items:center; justify-content:space-between; padding:6px 2px 12px}
+  header h1{font-size:19px; margin:0; letter-spacing:.5px}
+  header .date{color:var(--muted); font-size:13px}
+  .demo-banner{background:var(--amber); color:#000; text-align:center; font-size:12px; font-weight:700; padding:4px; border-radius:8px; margin-bottom:10px}
+
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px}
+  .card{background:var(--card); border-radius:var(--r); padding:12px}
+  .card.big{grid-column:1/-1; background:linear-gradient(135deg,#1d3a2a,#16281e); border:1px solid #2a5c3f}
+  .card .lbl{font-size:12px; color:var(--muted); margin-bottom:4px}
+  .card .val{font-size:22px; font-weight:800}
+  .card.big .val{font-size:30px; color:var(--green)}
+  .card .sub{font-size:11px; color:var(--muted); margin-top:4px}
+  .diff-ok{color:var(--green)} .diff-bad{color:var(--red)}
+
+  .day{background:var(--card); border-radius:var(--r); padding:12px; margin-bottom:10px}
+  .day h3{margin:0 0 8px; font-size:14px; color:var(--muted); font-weight:600}
+  .day table{width:100%; font-size:13px; border-collapse:collapse}
+  .day td{padding:3px 0}
+  .day td:last-child{text-align:right; font-weight:700}
+
+  .btns{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  .btn-in,.btn-out{border:none; border-radius:var(--r); padding:18px 0; font-size:17px; font-weight:800; color:#fff; cursor:pointer}
+  .btn-in{background:linear-gradient(135deg,var(--green),var(--green-d))}
+  .btn-out{background:linear-gradient(135deg,var(--red),var(--red-d))}
+  .btn-check{width:100%; background:var(--card2); color:var(--text); border:1px dashed var(--muted); border-radius:var(--r); padding:12px; font-size:14px; cursor:pointer; margin-bottom:12px}
+
+  .ops{display:flex; flex-direction:column; gap:6px}
+  .op{background:var(--card); border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px}
+  .op .ico{width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex:none}
+  .op.in .ico{background:#1f3d2b} .op.out .ico{background:#3d1f1f}
+  .op .info{flex:1; min-width:0}
+  .op .cat{font-size:14px; font-weight:700}
+  .op .meta{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .op .sum{font-size:15px; font-weight:800; white-space:nowrap}
+  .op.in .sum{color:var(--green)} .op.out .sum{color:var(--red)}
+  .op .sum small{display:block; font-size:10px; font-weight:500; color:var(--muted); text-align:right}
+  .empty{text-align:center; color:var(--muted); padding:30px 0; font-size:14px}
+
+  /* модалка */
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:flex-end; justify-content:center; z-index:50}
+  .overlay.show{display:flex}
+  .modal{background:var(--card2); width:100%; max-width:560px; border-radius:20px 20px 0 0; padding:16px; max-height:92vh; overflow-y:auto}
+  .modal h2{margin:0 0 12px; font-size:17px}
+  .grp{margin-bottom:12px}
+  .grp .lbl{font-size:12px; color:var(--muted); margin-bottom:6px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{background:var(--card); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:9px 13px; font-size:14px; cursor:pointer}
+  .chip.sel{background:var(--accent); border-color:var(--accent); font-weight:700}
+  .modal input,.modal select{width:100%; background:var(--card); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:12px; font-size:16px}
+  .modal .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .sum-input{font-size:26px !important; font-weight:800; text-align:center}
+  .m-actions{display:grid; grid-template-columns:1fr 2fr; gap:8px; margin-top:14px}
+  .m-cancel{background:var(--card); color:var(--muted); border:none; border-radius:12px; padding:14px; font-size:15px; cursor:pointer}
+  .m-save{border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:800; color:#fff; cursor:pointer; background:var(--accent)}
+  .m-save.in{background:var(--green-d)} .m-save.out{background:var(--red-d)}
+  .danger{background:none; border:none; color:var(--red); font-size:13px; margin-top:10px; cursor:pointer; width:100%; padding:8px}
+  .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--card2); border:1px solid var(--line); color:var(--text); padding:10px 18px; border-radius:12px; font-size:14px; z-index:99; display:none; max-width:90%}
+  .loading{opacity:.45; pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header>
+    <h1 id="title">КАССА · ТУРИЗМО 365</h1>
+    <div class="date" id="hdrDate"></div>
+  </header>
+  <div class="demo-banner" id="demoBanner" style="display:none">ДЕМО-РЕЖИМ — данные только в этом браузере</div>
+
+  <div class="cards">
+    <div class="card big">
+      <div class="lbl">НАЛИЧНЫХ В КАССЕ</div>
+      <div class="val" id="balCash">…</div>
+      <div class="sub" id="checkInfo"></div>
+    </div>
+    <div class="card"><div class="lbl">Перевод (всего)</div><div class="val" id="balTransfer">…</div></div>
+    <div class="card"><div class="lbl">QR (всего)</div><div class="val" id="balQr">…</div></div>
+    <div class="card" style="grid-column:1/-1"><div class="lbl">Залоги заблокированы на картах</div><div class="val" id="balBlocked" style="color:var(--amber)">…</div></div>
+  </div>
+
+  <div class="btns">
+    <button class="btn-in" onclick="openForm('ПОЛУЧЕНО')">➕ ПОЛУЧЕНО</button>
+    <button class="btn-out" onclick="openForm('ВЫДАНО')">➖ ВЫДАНО</button>
+  </div>
+  <button class="btn-check" onclick="openCheck()">🧮 Сверка кассы (пересчитать наличные)</button>
+
+  <div class="day">
+    <h3 id="dayTitle">Сегодня</h3>
+    <table id="dayTable"></table>
+  </div>
+
+  <div class="ops" id="opsList"></div>
+</div>
+
+<!-- Модалка операции -->
+<div class="overlay" id="ovForm">
+  <div class="modal">
+    <h2 id="fTitle"></h2>
+    <div class="grp"><div class="lbl">Категория</div><div class="chips" id="fCats"></div></div>
+    <div class="grp"><div class="lbl">Способ</div><div class="chips" id="fMethods"></div></div>
+    <div class="grp"><input class="sum-input" id="fSum" type="number" inputmode="numeric" placeholder="Сумма, ₽"></div>
+    <div class="grp"><input id="fClient" placeholder="Клиент (имя / телефон)"></div>
+    <div class="grp"><input id="fComment" placeholder="Комментарий (что за оборудование и т.п.)"></div>
+    <div class="grp row2">
+      <select id="fAdmin"></select>
+      <input id="fAmo" placeholder="№ сделки amoCRM">
+    </div>
+    <div class="grp row2" id="fEditDates" style="display:none">
+      <input id="fDate" placeholder="Дата (дд.мм.гггг)">
+      <input id="fTime" placeholder="Время (чч:мм)">
+    </div>
+    <div class="m-actions">
+      <button class="m-cancel" onclick="closeAll()">Отмена</button>
+      <button class="m-save" id="fSave" onclick="saveOp()">Сохранить</button>
+    </div>
+    <button class="danger" id="fDelete" style="display:none" onclick="deleteOp()">🗑 Аннулировать операцию (PIN)</button>
+  </div>
+</div>
+
+<!-- Модалка сверки -->
+<div class="overlay" id="ovCheck">
+  <div class="modal">
+    <h2>🧮 Сверка кассы</h2>
+    <div class="grp"><div class="lbl">По системе наличных должно быть</div><div class="val" id="cSystem" style="font-size:26px; font-weight:800"></div></div>
+    <div class="grp"><div class="lbl">Фактически пересчитали</div><input class="sum-input" id="cFact" type="number" inputmode="numeric" placeholder="Сумма, ₽"></div>
+    <div class="grp"><select id="cAdmin"></select></div>
+    <div class="m-actions">
+      <button class="m-cancel" onclick="closeAll()">Отмена</button>
+      <button class="m-save" onclick="saveCheck()">Сверить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= КОНФИГ =================
+var CATS = {
+  'ПОЛУЧЕНО': ['Предоплата','Оплата','Залог','Штраф','Внесено'],
+  'ВЫДАНО':   ['Возврат залога','Изъятие нал','Возврат оплаты']
+};
+var METHODS_BASE = ['Нал','Перевод','QR'];
+var METHOD_BLOCKED = 'Заблок. на карте'; // только для залогов
+var ICONS = {'Предоплата':'📅','Оплата':'💰','Залог':'🔒','Штраф':'⚠️','Внесено':'📥','Возврат залога':'🔓','Изъятие нал':'📤','Возврат оплаты':'↩️'};
+
+var state = null;
+var form = { dir:null, cat:null, method:null, editId:null };
+var isDemo = (typeof google === 'undefined' || !google.script);
+
+// ================= БЭКЕНД-МОСТ =================
+function api(fn, args, cb) {
+  document.getElementById('app').classList.add('loading');
+  function done(res){ document.getElementById('app').classList.remove('loading'); cb(res); }
+  function fail(err){ document.getElementById('app').classList.remove('loading'); toast('⚠️ ' + (err.message || err)); }
+  if (isDemo) {
+    try { done(demoApi[fn].apply(null, args)); } catch(e){ fail(e); }
+  } else {
+    var r = google.script.run.withSuccessHandler(done).withFailureHandler(fail);
+    r['api' + fn].apply(r, args);
+  }
+}
+
+// ================= ДЕМО-РЕЖИМ (localStorage) =================
+var demoApi = (function(){
+  var KEY = 't365_kassa_demo', PIN = '1234';
+  function load(){ return JSON.parse(localStorage.getItem(KEY) || '{"ops":[],"checks":[]}'); }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  function today(){ var d = new Date(); return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear(); }
+  function nowTime(){ var d = new Date(); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function balance(ops){
+    var b = {cash:0,transfer:0,qr:0,blocked:0};
+    ops.forEach(function(o){ if(o.status!=='активна')return; var s=(o.dir==='ПОЛУЧЕНО')?1:-1;
+      if(o.method==='Нал')b.cash+=s*o.sum; else if(o.method==='Перевод')b.transfer+=s*o.sum;
+      else if(o.method==='QR')b.qr+=s*o.sum; else b.blocked+=s*o.sum; });
+    return b;
+  }
+  function totals(ops){
+    var t = {inCash:0,inTransfer:0,inQr:0,outCash:0,outTransfer:0,outQr:0,blocked:0,count:ops.length};
+    ops.forEach(function(o){ if(o.method===METHOD_BLOCKED){t.blocked+=(o.dir==='ПОЛУЧЕНО'?1:-1)*o.sum;return;}
+      var k=(o.dir==='ПОЛУЧЕНО'?'in':'out')+({'Нал':'Cash','Перевод':'Transfer','QR':'Qr'}[o.method]||'Cash'); t[k]+=o.sum; });
+    return t;
+  }
+  return {
+    GetState: function(dateStr){
+      var d = load(), date = dateStr || today();
+      var dayOps = d.ops.filter(function(o){ return o.date===date && o.status==='активна'; });
+      return { date:date, ops:dayOps, balance:balance(d.ops), dayTotals:totals(dayOps),
+        admins:['Ясон','Админ 1','Админ 2'], title:'ТУРИЗМО 365 (демо)',
+        lastCheck: d.checks.length ? d.checks[d.checks.length-1] : null };
+    },
+    AddOp: function(op){
+      var d = load();
+      op.id = 'OP-'+Date.now()+'-'+Math.random().toString(36).slice(2,7); op.date = op.date||today(); op.time = op.time||nowTime();
+      op.sum = Math.abs(Number(op.sum)); op.status = 'активна';
+      if(!op.sum) throw new Error('Сумма не указана');
+      d.ops.push(op); save(d);
+      return demoApi.GetState(op.date);
+    },
+    EditOp: function(id, changes, pin){
+      if(String(pin)!==PIN) throw new Error('Неверный PIN владельца');
+      var d = load(); var op = d.ops.filter(function(o){return o.id===id;})[0];
+      if(!op) throw new Error('Операция не найдена');
+      ['date','time','sum','client','comment','amo'].forEach(function(k){
+        if(changes[k]!==undefined) op[k] = (k==='sum')?Math.abs(Number(changes[k])):changes[k]; });
+      save(d); return demoApi.GetState(op.date);
+    },
+    DeleteOp: function(id, pin){
+      if(String(pin)!==PIN) throw new Error('Неверный PIN владельца');
+      var d = load(); var op = d.ops.filter(function(o){return o.id===id;})[0];
+      if(!op) throw new Error('Операция не найдена');
+      op.status = 'удалена'; save(d); return demoApi.GetState(op.date);
+    },
+    SaveCheck: function(fact, admin){
+      var d = load(); var sys = balance(d.ops).cash; fact = Number(fact);
+      var c = { when:new Date().toLocaleString('ru'), system:sys, fact:fact, diff:fact-sys, admin:admin };
+      d.checks.push(c); save(d); return c;
+    }
+  };
+})();
+
+// ================= РЕНДЕР =================
+function fmt(n){ return (Number(n)||0).toLocaleString('ru-RU') + ' ₽'; }
+
+function render(s){
+  state = s;
+  document.getElementById('title').textContent = 'КАССА · ' + (s.title || 'ТУРИЗМО 365');
+  document.getElementById('hdrDate').textContent = s.date;
+  document.getElementById('balCash').textContent = fmt(s.balance.cash);
+  document.getElementById('balTransfer').textContent = fmt(s.balance.transfer);
+  document.getElementById('balQr').textContent = fmt(s.balance.qr);
+  document.getElementById('balBlocked').textContent = fmt(s.balance.blocked);
+
+  var ci = document.getElementById('checkInfo');
+  if (s.lastCheck) {
+    var ok = Number(s.lastCheck.diff) === 0;
+    ci.innerHTML = 'Последняя сверка: ' + s.lastCheck.when + ' — ' +
+      (ok ? '<span class="diff-ok">сошлось ✔</span>' : '<span class="diff-bad">расхождение ' + fmt(s.lastCheck.diff) + '</span>');
+  } else ci.textContent = 'Сверок ещё не было';
+
+  var t = s.dayTotals;
+  document.getElementById('dayTitle').textContent = 'Итоги за ' + s.date + ' (' + t.count + ' опер.)';
+  document.getElementById('dayTable').innerHTML =
+    '<tr><td>Получено: нал / перевод / QR</td><td style="color:var(--green)">' + fmt(t.inCash) + ' / ' + fmt(t.inTransfer) + ' / ' + fmt(t.inQr) + '</td></tr>' +
+    '<tr><td>Выдано: нал / перевод / QR</td><td style="color:var(--red)">' + fmt(t.outCash) + ' / ' + fmt(t.outTransfer) + ' / ' + fmt(t.outQr) + '</td></tr>' +
+    (t.blocked ? '<tr><td>Залогов заблокировано за день</td><td style="color:var(--amber)">' + fmt(t.blocked) + '</td></tr>' : '');
+
+  var list = document.getElementById('opsList');
+  if (!s.ops.length) { list.innerHTML = '<div class="empty">Операций за ' + s.date + ' пока нет</div>'; return; }
+  list.innerHTML = s.ops.slice().reverse().map(function(o){
+    var cls = (o.dir === 'ПОЛУЧЕНО') ? 'in' : 'out';
+    var sign = (o.dir === 'ПОЛУЧЕНО') ? '+' : '−';
+    var meta = [o.time, o.client, o.comment, o.admin, o.amo ? 'amo:' + o.amo : ''].filter(Boolean).join(' · ');
+    return '<div class="op ' + cls + '" onclick="openEdit(\'' + o.id + '\')">' +
+      '<div class="ico">' + (ICONS[o.cat] || '💵') + '</div>' +
+      '<div class="info"><div class="cat">' + o.cat + '</div><div class="meta">' + meta + '</div></div>' +
+      '<div class="sum">' + sign + fmt(o.sum) + '<small>' + o.method + '</small></div></div>';
+  }).join('');
+}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, 3500);
+}
+
+// ================= ФОРМА ОПЕРАЦИИ =================
+function chips(elId, items, sel, onSel){
+  document.getElementById(elId).innerHTML = items.map(function(x){
+    return '<div class="chip' + (x === sel ? ' sel' : '') + '" onclick="' + onSel + '(\'' + x + '\')">' + x + '</div>';
+  }).join('');
+}
+function methodsFor(cat){
+  return (cat === 'Залог' || cat === 'Возврат залога') ? METHODS_BASE.concat([METHOD_BLOCKED]) : METHODS_BASE;
+}
+function pickCat(c){ form.cat = c; if (methodsFor(c).indexOf(form.method) < 0) form.method = 'Нал'; redrawForm(); }
+function pickMethod(m){ form.method = m; redrawForm(); }
+function redrawForm(){
+  chips('fCats', CATS[form.dir], form.cat, 'pickCat');
+  chips('fMethods', methodsFor(form.cat), form.method, 'pickMethod');
+}
+
+function openForm(dir){
+  form = { dir:dir, cat:CATS[dir][0], method:'Нал', editId:null };
+  document.getElementById('fTitle').textContent = (dir === 'ПОЛУЧЕНО' ? '➕ Получено' : '➖ Выдано');
+  document.getElementById('fSave').className = 'm-save ' + (dir === 'ПОЛУЧЕНО' ? 'in' : 'out');
+  document.getElementById('fSum').value = ''; document.getElementById('fClient').value = '';
+  document.getElementById('fComment').value = ''; document.getElementById('fAmo').value = '';
+  document.getElementById('fEditDates').style.display = 'none';
+  document.getElementById('fDelete').style.display = 'none';
+  fillAdmins('fAdmin');
+  redrawForm();
+  document.getElementById('ovForm').classList.add('show');
+}
+
+function openEdit(id){
+  var o = state.ops.filter(function(x){ return x.id === id; })[0];
+  if (!o) return;
+  form = { dir:o.dir, cat:o.cat, method:o.method, editId:id };
+  document.getElementById('fTitle').textContent = '✏️ Коррекция (нужен PIN)';
+  document.getElementById('fSave').className = 'm-save';
+  document.getElementById('fSum').value = o.sum;
+  document.getElementById('fClient').value = o.client || '';
+  document.getElementById('fComment').value = o.comment || '';
+  document.getElementById('fAmo').value = o.amo || '';
+  document.getElementById('fDate').value = o.date;
+  document.getElementById('fTime').value = o.time;
+  document.getElementById('fEditDates').style.display = 'grid';
+  document.getElementById('fDelete').style.display = 'block';
+  fillAdmins('fAdmin', o.admin);
+  redrawForm();
+  document.getElementById('ovForm').classList.add('show');
+}
+
+function fillAdmins(elId, sel){
+  var admins = (state && state.admins) || [];
+  document.getElementById(elId).innerHTML = admins.map(function(a){
+    return '<option' + (a === sel ? ' selected' : '') + '>' + a + '</option>';
+  }).join('');
+}
+
+function saveOp(){
+  var sum = document.getElementById('fSum').value;
+  if (!Number(sum)) { toast('Укажи сумму'); return; }
+  if (form.editId) {
+    var pin = prompt('PIN владельца для коррекции:');
+    if (pin === null) return;
+    api('EditOp', [form.editId, {
+      sum:sum, date:document.getElementById('fDate').value, time:document.getElementById('fTime').value,
+      client:document.getElementById('fClient').value, comment:document.getElementById('fComment').value,
+      amo:document.getElementById('fAmo').value
+    }, pin, document.getElementById('fAdmin').value], function(s){ closeAll(); render(s); toast('✏️ Исправлено'); });
+  } else {
+    api('AddOp', [{
+      dir:form.dir, cat:form.cat, method:form.method, sum:sum,
+      client:document.getElementById('fClient').value, comment:document.getElementById('fComment').value,
+      admin:document.getElementById('fAdmin').value, amo:document.getElementById('fAmo').value
+    }], function(s){ closeAll(); render(s); toast('✅ Записано: ' + form.cat + ' ' + fmt(sum)); });
+  }
+}
+
+function deleteOp(){
+  var pin = prompt('PIN владельца для аннулирования:');
+  if (pin === null) return;
+  api('DeleteOp', [form.editId, pin, document.getElementById('fAdmin').value], function(s){ closeAll(); render(s); toast('🗑 Операция аннулирована'); });
+}
+
+// ================= СВЕРКА =================
+function openCheck(){
+  document.getElementById('cSystem').textContent = fmt(state.balance.cash);
+  document.getElementById('cFact').value = '';
+  fillAdmins('cAdmin');
+  document.getElementById('ovCheck').classList.add('show');
+}
+function saveCheck(){
+  var fact = document.getElementById('cFact').value;
+  if (fact === '') { toast('Укажи фактическую сумму'); return; }
+  api('SaveCheck', [fact, document.getElementById('cAdmin').value], function(r){
+    closeAll();
+    toast(r.diff === 0 ? '✅ Касса сошлась!' : '⚠️ Расхождение: ' + fmt(r.diff));
+    refresh();
+  });
+}
+
+function closeAll(){
+  document.getElementById('ovForm').classList.remove('show');
+  document.getElementById('ovCheck').classList.remove('show');
+}
+document.querySelectorAll('.overlay').forEach(function(ov){
+  ov.addEventListener('click', function(e){ if (e.target === ov) closeAll(); });
+});
+
+// ================= СТАРТ =================
+function refresh(){ api('GetState', [null], render); }
+if (isDemo) document.getElementById('demoBanner').style.display = 'block';
+refresh();
+</script>
+</body>
+</html>
