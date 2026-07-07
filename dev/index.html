@@ -1537,6 +1537,14 @@ function copyCalc() {
   let text = `🏕 TURIZMO 365 — Расчёт аренды\n`;
   text += `${'─'.repeat(28)}\n`;
   text += `📅 Дата составления: ${today}\n`;
+  if (S.dateFrom) {
+    const df = new Date(S.dateFrom).toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+    text += `🗓 Начало аренды: ${df}\n`;
+  }
+  if (S.dateTo) {
+    const dt = new Date(S.dateTo).toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+    text += `🗓 Конец аренды: ${dt}\n`;
+  }
 
   // Блок снаряжения
   if (equipLines.length > 0) {
@@ -1673,7 +1681,7 @@ function generateKP() {
       <div style="display:flex;gap:20px;margin-bottom:16px;font-size:13px;flex-wrap:wrap;">
         <div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Дата составления</div>${today}</div>
         ${S.dateFrom ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Начало аренды</div>${new Date(S.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : ''}
-        ${S.dateTo ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Конец аренды</div>${new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Срок аренды</div>${dayText}</div>`}
+        ${S.dateTo ? `<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:2px;">Конец аренды</div>${new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>` : ''}
       </div>
       <div style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
         <div style="background:#f0f4f8;padding:10px 16px;display:grid;grid-template-columns:1fr auto auto auto;gap:6px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">
@@ -1748,7 +1756,7 @@ function kpPrint() {
   const metaHtml = `
     <td><div class="mlabel">Дата составления</div><div>${d.today}</div></td>
     ${df ? `<td><div class="mlabel">Начало аренды</div><div>${df}</div></td>` : ''}
-    ${dt ? `<td><div class="mlabel">Конец аренды</div><div>${dt}</div></td>` : `<td><div class="mlabel">Срок аренды</div><div>${d.dayText}</div></td>`}
+    ${dt ? `<td><div class="mlabel">Конец аренды</div><div>${dt}</div></td>` : ''}
   `;
 
   const printWin = window.open('', '_blank');
@@ -1813,6 +1821,7 @@ tr.tot td:last-child { font-size:17px; font-weight:800; }
 </table>
 <div class="foot">TURIZMO 365 · ${d.today}</div>
 <div class="no-print" style="text-align:center;margin-top:24px;">
+  <p style="font-size:12px;color:#94a3b8;margin-bottom:12px;">💡 Чтобы убрать URL и дату внизу страницы — в диалоге печати снимите галочку <b>«Верхний и нижний колонтитулы»</b></p>
   <button onclick="window.close()" style="padding:12px 28px;background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:12px;font-size:15px;font-weight:600;color:#475569;cursor:pointer;">✕ Закрыть окно</button>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
