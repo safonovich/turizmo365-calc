@@ -54,12 +54,6 @@ body {
 .header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
 
 /* ─── HISTORY ─── */
-.btn-history {
-  background: none; border: 1.5px solid rgba(255,255,255,0.25);
-  color: var(--text-muted); font-size: 13px; cursor: pointer;
-  padding: 5px 0; width: 100%; border-radius: 8px; margin-top: 6px;
-}
-.btn-history:active { opacity: .75; }
 .hist-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.5);
   z-index: 200; display: flex; align-items: flex-end; justify-content: center;
@@ -381,7 +375,7 @@ body {
   bottom: 0; left: 0; right: 0;
   background: white;
   border-top: 1px solid var(--border);
-  padding: 12px 16px 16px;
+  padding: 8px 14px max(10px, env(safe-area-inset-bottom));
   box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
   z-index: 100;
 }
@@ -389,54 +383,54 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
-.sticky-label { font-size: 13px; color: var(--text-muted); }
+.sticky-label { font-size: 12px; color: var(--text-muted); }
 .sticky-saving {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .sticky-total {
-  font-size: 28px;
+  font-size: 23px;
   font-weight: 900;
   color: var(--primary);
   line-height: 1;
 }
 .btn-row {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   margin-top: 4px;
 }
 .btn-copy {
   flex: 1;
-  padding: 10px 6px;
+  padding: 9px 6px;
   background: linear-gradient(135deg, var(--primary), #1e40af);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 11px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.2px;
-  box-shadow: 0 4px 14px rgba(29,78,216,0.35);
+  box-shadow: 0 3px 10px rgba(29,78,216,0.3);
   transition: opacity 0.15s;
   white-space: nowrap;
 }
 .btn-copy:active { opacity: 0.88; }
 .btn-kp {
   flex: 1;
-  padding: 10px 6px;
+  padding: 9px 6px;
   background: linear-gradient(135deg, #15803d, #16a34a);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 11px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.2px;
-  box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+  box-shadow: 0 3px 10px rgba(22,163,74,0.3);
   transition: opacity 0.15s;
   white-space: nowrap;
 }
@@ -461,18 +455,35 @@ body {
 }
 .dtp-field.has-value { color: var(--text); border-color: var(--primary); background: white; }
 
-/* ─── NARAD BUTTONS ─── */
-.btn-order-out {
-  flex: 1; padding: 9px 6px; border: none; border-radius: 12px;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  background: #7c3aed; color: white; white-space: nowrap;
+/* ─── NARAD BUTTONS (ряд 2 — 3 кнопки) ─── */
+.btn-narad {
+  flex: 1; padding: 6px 4px; border: none; border-radius: 9px;
+  font-size: 10.5px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; letter-spacing: 0.1px;
+  transition: opacity 0.15s;
 }
-.btn-order-in {
-  flex: 1; padding: 9px 6px; border: none; border-radius: 12px;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  background: #0891b2; color: white; white-space: nowrap;
+.btn-narad:active { opacity: 0.82; }
+.btn-narad-out { background: #7c3aed; color: white; }
+.btn-narad-in  { background: #0891b2; color: white; }
+.btn-narad-msg { background: #ea580c; color: white; }
+
+/* ─── UTIL BUTTONS (ряд 3 — Сбросить + История) ─── */
+.btn-util-row {
+  display: flex;
+  gap: 7px;
+  margin-top: 5px;
 }
-.btn-order-out:active, .btn-order-in:active { opacity: 0.85; }
+.btn-util {
+  flex: 1; padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--text-muted);
+  font-size: 10.5px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  transition: background 0.12s;
+}
+.btn-util:active { background: #e2e8f0; }
 
 /* ─── DATETIME PICKER ─── */
 .dtp-overlay {
@@ -533,16 +544,6 @@ body {
 .dtp-cal .cal-day.selected { background:var(--primary); color:white; font-weight:700; }
 .dtp-cal .cal-day.empty { cursor:default; }
 
-.btn-reset {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 4px 0 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 
 /* ─── DATE RANGE PICKER ─── */
 .date-range-btn {
@@ -860,6 +861,7 @@ body {
 
 <!-- STICKY TOTAL -->
 <div class="sticky-bar">
+  <!-- Итого -->
   <div class="sticky-row">
     <div>
       <div class="sticky-label">Итого к оплате</div>
@@ -867,18 +869,22 @@ body {
     </div>
     <div class="sticky-total" id="total-display">0 ₽</div>
   </div>
+  <!-- Ряд 1: главные кнопки -->
   <div class="btn-row">
     <button class="btn-copy" id="btn-copy-html" onclick="copyCalc()">📋 Скопировать расчёт</button>
     <button class="btn-kp" id="btn-kp-html" onclick="generateKP()">📄 Сформировать КП</button>
   </div>
-  <div class="btn-row" style="margin-top:7px;">
-    <button class="btn-order-out" onclick="generateOrder('vyezd')">🚐 Наряд: Выезд</button>
-    <button class="btn-order-in" onclick="generateOrder('prokat')">🏪 Наряд: Прокат</button>
+  <!-- Ряд 2: наряды + клиенту (3 кнопки, меньше) -->
+  <div class="btn-row" style="margin-top:5px;">
+    <button class="btn-narad btn-narad-out" onclick="generateOrder('vyezd')">🚐 Наряд: Выезд</button>
+    <button class="btn-narad btn-narad-in" onclick="generateOrder('prokat')">🏪 Наряд: Прокат</button>
+    <button class="btn-narad btn-narad-msg" onclick="copyClientMsg()">✉️ Клиенту</button>
   </div>
-  <div style="text-align:center;margin-top:8px">
-    <button class="btn-reset" onclick="resetAll()">Сбросить всё</button>
+  <!-- Ряд 3: утилиты (2 маленькие кнопки) -->
+  <div class="btn-util-row">
+    <button class="btn-util" onclick="resetAll()">🗑 Сбросить всё</button>
+    <button class="btn-util" onclick="openHistory()">📜 История расчётов</button>
   </div>
-  <button class="btn-history" onclick="openHistory()">📜 История расчётов</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1721,6 +1727,60 @@ function resetAll() {
   S.dlv = { km:0, fuelPrice:74, fuelRate:10, amort:3.8, salary:6000, driverDays:1, withPickup:false, margin:60 };
   document.querySelectorAll('.vip-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   renderAll();
+}
+
+// ─── Сообщение клиенту ───
+function copyClientMsg() {
+  const { total, savings, lines } = calcAll();
+  if (lines.length === 0) { showToast('Добавьте снаряжение'); return; }
+
+  const fmt = n => n.toLocaleString('ru-RU');
+  const equipLines = lines.filter(l => !l.isSvc);
+
+  // Даты
+  let dateStr = '';
+  if (S.dtStart || S.dtFinish) {
+    const fmtDt = iso => {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+      return `${d.getDate()} ${months[d.getMonth()]}`;
+    };
+    const parts = [S.dtStart && fmtDt(S.dtStart), S.dtFinish && fmtDt(S.dtFinish)].filter(Boolean);
+    if (parts.length) dateStr = parts.join(' — ');
+  } else if (S.dateFrom && S.dateTo) {
+    const f = s => s.split('-').reverse().join('.');
+    dateStr = `${f(S.dateFrom)} — ${f(S.dateTo)}`;
+  }
+
+  let txt = `Здравствуйте! 🏕\n\n`;
+  txt += `Ваш заказ в TURIZMO 365:\n\n`;
+
+  if (dateStr) txt += `📅 Даты аренды: ${dateStr}\n`;
+
+  const pickup = S.pickupAddress || 'Москва, Смольная улица, 7';
+  txt += `📍 Точка выдачи: ${pickup}\n`;
+
+  txt += `\n⛺ Снаряжение:\n`;
+  equipLines.forEach(l => {
+    txt += `• ${l.name}${l.qty > 1 ? ` × ${l.qty}` : ''}\n`;
+  });
+
+  txt += `\n💰 Итого: ${fmt(total)} ₽\n`;
+  if (savings > 0) txt += `🎁 Ваша выгода: ${fmt(savings)} ₽\n`;
+
+  if (S.executorName || S.executorPhone) {
+    txt += `\n📞 Ваш менеджер: ${[S.executorName, S.executorPhone].filter(Boolean).join(' ')}\n`;
+  }
+
+  if (S.comments) txt += `\n💬 Комментарий: ${S.comments}\n`;
+
+  navigator.clipboard.writeText(txt).then(() => showToast('Сообщение скопировано!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Сообщение скопировано!');
+  });
 }
 
 function copyCalc() {
