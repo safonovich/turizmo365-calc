@@ -655,6 +655,43 @@ body {
   cursor: pointer; letter-spacing: 0.3px;
 }
 .btn-route:disabled { opacity: 0.6; cursor: wait; }
+/* ─── адрес-дисплей в транспорте ─── */
+.dlv-addr-block {
+  background: var(--primary-light);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 13px;
+  margin-bottom: 10px;
+}
+.dlv-addr-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 5px;
+}
+.dlv-addr-row:last-of-type { margin-bottom: 0; }
+.dlv-addr-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 52px;
+  padding-top: 1px;
+  white-space: nowrap;
+}
+.dlv-addr-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+  flex: 1;
+}
+.dlv-addr-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  border-top: 1px solid #dbeafe;
+  padding-top: 6px;
+}
 .dlv-divider {
   border: none;
   border-top: 1px solid var(--border);
@@ -749,15 +786,21 @@ body {
 <!-- ORDER INFO -->
 <div class="card">
   <div class="card-title">📋 Данные заказа</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-    <div>
-      <div class="field-label">Заказчик</div>
-      <input class="order-input" type="text" id="order-client-name" placeholder="Имя клиента" oninput="S.clientName=this.value">
-    </div>
-    <div>
-      <div class="field-label">Телефон</div>
-      <input class="order-input" type="tel" id="order-client-phone" placeholder="+7 000 000 0000" oninput="S.clientPhone=this.value">
-    </div>
+
+  <div class="field-label" style="margin-bottom:6px;">👤 Контакты заказчика</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+    <input class="order-input" type="text" id="order-client-name" placeholder="Имя 1" oninput="S.clientName=this.value">
+    <input class="order-input" type="tel" id="order-client-phone" placeholder="+7 000 000 0000" oninput="S.clientPhone=this.value">
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <input class="order-input" type="text" id="order-client-name2" placeholder="Имя 2 (необязательно)" oninput="S.clientName2=this.value">
+    <input class="order-input" type="tel" id="order-client-phone2" placeholder="+7 000 000 0000" oninput="S.clientPhone2=this.value">
+  </div>
+
+  <div class="field-label" style="margin-bottom:6px;">🧑‍💼 Контакт исполнителя</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <input class="order-input" type="text" id="order-executor-name" placeholder="Имя сотрудника" oninput="S.executorName=this.value">
+    <input class="order-input" type="tel" id="order-executor-phone" placeholder="+7 000 000 0000" oninput="S.executorPhone=this.value">
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
     <div>
@@ -775,12 +818,12 @@ body {
   </div>
   <div style="margin-bottom:10px;">
     <div class="field-label">🚐 Точка отгрузки (прокат)</div>
-    <input class="order-input" type="text" id="order-pickup" value="Москва, Смольная улица, 7" oninput="S.pickupAddress=this.value">
+    <input class="order-input" type="text" id="order-pickup" value="Москва, Смольная улица, 7" oninput="S.pickupAddress=this.value; updateDlvDisplay()">
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
     <div>
       <div class="field-label">🗺 Точка старта</div>
-      <input class="order-input" type="text" id="order-point-start" placeholder="Адрес или ссылка на карту" oninput="S.pointStart=this.value">
+      <input class="order-input" type="text" id="order-point-start" placeholder="Адрес или ссылка на карту" oninput="S.pointStart=this.value; updateDlvDisplay()">
     </div>
     <div>
       <div class="field-label">🏕 Точка финиша</div>
@@ -1057,6 +1100,10 @@ let S = {
   // Данные заказа
   clientName: '',
   clientPhone: '',
+  clientName2: '',
+  clientPhone2: '',
+  executorName: '',
+  executorPhone: '',
   dtStart: '',       // ISO datetime "2026-07-11T11:00"
   dtFinish: '',      // ISO datetime "2026-07-12T17:00"
   pointStart: '',
@@ -1065,8 +1112,6 @@ let S = {
   comments: '',
   // Поля калькулятора доставки
   dlv: {
-    addrFrom: '',   // Откуда (база/склад)
-    addrTo: '',     // Куда (адрес клиента)
     km: 0,          // км в одну сторону
     kmManual: false,// вручную введено
     fuelPrice: 74,  // р/л
@@ -1270,27 +1315,22 @@ function dlvCalcPanel() {
     <div class="dlv-total-row">
       <span class="tn">💰 Итого за транспорт</span>
       <span class="tv">${fmt(r.total)}</span>
-    </div>` : (d.km > 0 ? `<div style="text-align:center;padding:10px;color:var(--text-muted);font-size:13px">Заполните адреса выше</div>` : '');
+    </div>` : '');
 
   return `<div class="svc-expand show">
     <div class="svc-expand-title">🚚 Расчёт транспорта</div>
 
-    <!-- Адреса -->
-    <div class="dlv-row" style="flex-direction:column;align-items:stretch;gap:6px">
-      <div class="dlv-label" style="font-weight:600">📍 Откуда (база/склад)</div>
-      <div style="display:flex;gap:6px">
-        <input id="dlv-from" class="dlv-input" style="width:100%;font-size:13px;font-weight:500;color:var(--text)"
-          type="text" placeholder="Москва, ул. Примерная 1" value="${d.addrFrom}"
-          oninput="S.dlv.addrFrom=this.value">
+    <!-- Адреса — берутся из блока «Данные заказа» -->
+    <div class="dlv-addr-block">
+      <div class="dlv-addr-row">
+        <span class="dlv-addr-label">📍 Откуда</span>
+        <span class="dlv-addr-val" id="dlv-addr-from">${S.pickupAddress || '<span style="color:var(--text-muted);font-weight:400">не указано</span>'}</span>
       </div>
-    </div>
-    <div class="dlv-row" style="flex-direction:column;align-items:stretch;gap:6px;margin-top:4px">
-      <div class="dlv-label" style="font-weight:600">📍 Куда (клиент)</div>
-      <div style="display:flex;gap:6px">
-        <input id="dlv-to" class="dlv-input" style="width:100%;font-size:13px;font-weight:500;color:var(--text)"
-          type="text" placeholder="Адрес старта маршрута" value="${d.addrTo}"
-          oninput="S.dlv.addrTo=this.value">
+      <div class="dlv-addr-row">
+        <span class="dlv-addr-label">📍 Куда</span>
+        <span class="dlv-addr-val" id="dlv-addr-to">${S.pointStart || '<span style="color:var(--text-muted);font-weight:400">не указано</span>'}</span>
       </div>
+      <div class="dlv-addr-hint">↑ Адреса заполняются в блоке «Данные заказа»</div>
     </div>
     <button class="btn-route" onclick="calcRoute()" id="btn-route">
       🗺 Рассчитать маршрут
@@ -1617,15 +1657,12 @@ function computeTransport() {
 
 // ─── Геокодирование + маршрут (OpenStreetMap/OSRM, бесплатно) ───
 async function calcRoute() {
-  const fromEl = document.getElementById('dlv-from');
-  const toEl   = document.getElementById('dlv-to');
-  const from   = (fromEl ? fromEl.value : '') || S.dlv.addrFrom;
-  const to     = (toEl   ? toEl.value   : '') || S.dlv.addrTo;
-  S.dlv.addrFrom = from; S.dlv.addrTo = to;
+  const from = S.pickupAddress;
+  const to   = S.pointStart;
 
   const btn    = document.getElementById('btn-route');
   const status = document.getElementById('route-status');
-  if (!from || !to) { status.textContent = '⚠️ Введите оба адреса'; return; }
+  if (!from || !to) { status.textContent = '⚠️ Заполните «Точку отгрузки» и «Точку старта» в блоке «Данные заказа»'; return; }
 
   btn.disabled = true; btn.textContent = '⏳ Считаем...';
   status.textContent = '';
@@ -1653,12 +1690,7 @@ async function calcRoute() {
     computeTransport();
     renderServices();
     updateTotals();
-    // восстановить адреса в полях после рендера
     setTimeout(() => {
-      const f = document.getElementById('dlv-from');
-      const t = document.getElementById('dlv-to');
-      if (f) f.value = from;
-      if (t) t.value = to;
       if (status) status.innerHTML = `✅ Маршрут: <b>${km} км</b> в одну сторону`;
     }, 0);
   } catch(e) {
@@ -1670,6 +1702,15 @@ async function calcRoute() {
 
 function fmt2(n) { return (+n).toFixed(2); }
 
+// Мгновенное обновление дисплея адресов в блоке транспорта
+function updateDlvDisplay() {
+  const fromEl = document.getElementById('dlv-addr-from');
+  const toEl   = document.getElementById('dlv-addr-to');
+  const empty  = '<span style="color:var(--text-muted);font-weight:400">не указано</span>';
+  if (fromEl) fromEl.innerHTML = S.pickupAddress || empty;
+  if (toEl)   toEl.innerHTML   = S.pointStart    || empty;
+}
+
 function resetAll() {
   S.qty = {};
   S.svcs = {};
@@ -1677,7 +1718,7 @@ function resetAll() {
   S.days = 1;
   transportPrice = 0;
   S.dlvResult = null;
-  S.dlv = { addrFrom:'', addrTo:'', km:0, fuelPrice:74, fuelRate:10, amort:3.8, salary:6000, driverDays:1, withPickup:false, margin:60 };
+  S.dlv = { km:0, fuelPrice:74, fuelRate:10, amort:3.8, salary:6000, driverDays:1, withPickup:false, margin:60 };
   document.querySelectorAll('.vip-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   renderAll();
 }
@@ -2380,69 +2421,114 @@ function fmtDt(iso) {
 function generateOrder(type) {
   const { total, savings, lines } = calcAll();
   const isVyezd = type === 'vyezd';
-
-  const sep = '─'.repeat(32);
+  const sep = '─'.repeat(34);
 
   const svcNames = new Set([...SVCS.map(s => s.name).filter(Boolean), S.customSvcName, S.customSvcName2]);
   const equipLines = lines.filter(l => !svcNames.has(l.name));
   const svcLines   = lines.filter(l =>  svcNames.has(l.name));
 
-  const title = isVyezd ? '🚐 ЗАКАЗ-НАРЯД: ВЫЕЗД' : '🏪 ЗАКАЗ-НАРЯД: ПРОКАТ';
+  // Вспомогательные функции форматирования дат
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso + 'T12:00').toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+  }
+  function fmtDateShort(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso + 'T12:00');
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  }
+  function getTime(dtIso) {
+    if (!dtIso || dtIso.length < 16) return '';
+    return dtIso.slice(11,16);
+  }
 
-  let txt = `${title}\n${sep}\n`;
+  const dateFrom = S.dtStart ? S.dtStart.slice(0,10) : S.dateFrom;
+  const dateTo   = S.dtFinish ? S.dtFinish.slice(0,10) : S.dateTo;
+  const timeStart  = getTime(S.dtStart);
+  const timeFinish = getTime(S.dtFinish);
 
-  if (S.clientName)  txt += `👤 Заказчик: ${S.clientName}\n`;
-  if (S.clientPhone) txt += `📞 Контакт: ${S.clientPhone}\n`;
+  let txt = isVyezd ? 'Карточка выезда\n' : 'Карточка проката\n';
+  txt += sep + '\n\n';
+
+  // Даты и расстояние
+  if (dateFrom || dateTo) {
+    txt += `Даты: ${fmtDateShort(dateFrom)}${dateTo ? ' - ' + fmtDateShort(dateTo) : ''}\n`;
+  }
+  if (S.dlv && S.dlv.km > 0) txt += `Расстояние: ${S.dlv.km} км\n`;
   txt += '\n';
 
-  txt += `📅 Старт: ${fmtDt(S.dtStart) || (S.dateFrom ? new Date(S.dateFrom).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '—')}\n`;
-  if (isVyezd && S.pointStart) txt += `   📍 ${S.pointStart}\n`;
-
-  txt += `📅 Финиш: ${fmtDt(S.dtFinish) || (S.dateTo ? new Date(S.dateTo).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'}) : '—')}\n`;
-  if (isVyezd && S.pointFinish) txt += `   📍 ${S.pointFinish}\n`;
-
-  if (!isVyezd) {
-    txt += `\n🚐 Точка отгрузки: ${S.pickupAddress || 'Москва, Смольная улица, 7'}\n`;
+  // Контакты
+  if (S.clientName || S.clientPhone) {
+    txt += `Контактное лицо от заказчика:\n`;
+    if (S.clientName || S.clientPhone) txt += `${S.clientName || ''}${S.clientName && S.clientPhone ? ' ' : ''}${S.clientPhone || ''}\n`;
+    if (S.clientName2 || S.clientPhone2) txt += `${S.clientName2 || ''}${S.clientName2 && S.clientPhone2 ? ' ' : ''}${S.clientPhone2 || ''}\n`;
+    txt += '\n';
+  }
+  if (S.executorName || S.executorPhone) {
+    txt += `Контактное лицо от исполнителя:\n`;
+    txt += `${S.executorName || ''}${S.executorName && S.executorPhone ? ' ' : ''}${S.executorPhone || ''}\n\n`;
   }
 
-  txt += `\n📦 Снаряжение:\n`;
+  // Старт
+  txt += `📅 Начало аренды: ${fmtDate(dateFrom)}\n`;
+  if (timeStart) txt += `Время старта (готовности снаряжения): ${timeStart}\n`;
+  if (isVyezd && S.pointStart) txt += `Место старта: ${S.pointStart}\n`;
+  txt += '\n';
+
+  // Финиш
+  txt += `📅 Конец аренды: ${fmtDate(dateTo)}\n`;
+  if (timeFinish) txt += `Время финиша (планируемое): ${timeFinish}\n`;
+  if (isVyezd && S.pointFinish) txt += `Место финиша (точка забора снаряжения): ${S.pointFinish}\n`;
+  if (!isVyezd) txt += `Точка отгрузки: ${S.pickupAddress || 'Москва, Смольная улица, 7'}\n`;
+  txt += '\n';
+
+  // Снаряжение
+  txt += `⛺ Снаряжение:\n`;
   if (equipLines.length > 0) {
-    equipLines.forEach(l => {
-      txt += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''}\n`;
-    });
+    equipLines.forEach(l => { txt += `• ${l.name}${l.qty > 1 ? ' × ' + l.qty : ''}\n`; });
   } else {
-    txt += '  (не выбрано)\n';
+    txt += '(не выбрано)\n';
   }
 
-  if (svcLines.length > 0) {
-    txt += `\n🔧 Услуги:\n`;
-    svcLines.forEach(l => {
-      txt += `  • ${l.name}${l.qty > 1 ? ' ×' + l.qty : ''}\n`;
-    });
-  }
+  // Комментарии
+  txt += `\nКомментарии: ${S.comments || 'отсутствует'}\n`;
 
-  if (S.comments) txt += `\n💬 ${S.comments}\n`;
+  // Оплата (только для выезда)
+  if (isVyezd) {
+    txt += `\n${sep}\n💰 Оплата выезда\n\n`;
 
-  if (isVyezd && lines.length > 0) {
-    txt += `\n${sep}\n💰 Расчёт:\n`;
-    // Доставка из калькулятора
     if (S.dlvResult && S.dlv.km > 0) {
       const d = S.dlv; const r = S.dlvResult;
-      txt += `  Доставка (${d.km} км × ${d.withPickup?4:2}): ${fmt(r.tripCost)}\n`;
-      txt += `  ЗП водителя (${d.driverDays} дн.): ${fmt(r.salaryTotal)}\n`;
+      const trips = d.withPickup ? 4 : 2;
+      txt += `Доставка:\n`;
+      txt += `Стоимость ${fmt2(r.costPerKm)} р/км\n`;
+      txt += `ГСМ (${d.km} км × ${trips}) ${fmt(r.tripCost)}\n`;
+      txt += `ЗП водителя (${d.driverDays} дн.) ${fmt(r.salaryTotal)}\n`;
+      txt += `Итого: ${fmt(r.cost)}\n\n`;
     }
-    // Услуги
-    svcLines.forEach(l => {
-      const unitP = l.unitPrice ? `${l.unitPrice.toLocaleString('ru-RU')} ₽ × ${l.qty}` : '';
-      txt += `  ${l.name}${unitP ? ' (' + unitP + ')' : ''}: ${fmt(l.price)}\n`;
-    });
-    if (savings > 0) txt += `  Скидка: −${fmt(savings)}\n`;
-    txt += `${sep}\n💵 ИТОГО: ${fmt(total)}\n`;
+
+    if (svcLines.length > 0) {
+      txt += `Услуги:\n`;
+      svcLines.forEach(l => {
+        if (l.unitPrice && l.qty > 1) {
+          txt += `${l.name} (${l.unitPrice.toLocaleString('ru-RU')} р × ${l.qty}) ${fmt(l.price)}\n`;
+        } else {
+          txt += `${l.name}: ${fmt(l.price)}\n`;
+        }
+      });
+      const svcTotal = svcLines.reduce((s, l) => s + l.price, 0);
+      txt += `Итого: ${fmt(svcTotal)}\n\n`;
+    }
+
+    const dlvTotal = S.dlvResult ? S.dlvResult.cost : 0;
+    const svcTotal2 = svcLines.reduce((s, l) => s + l.price, 0);
+    const grandTotal = dlvTotal + svcTotal2;
+    if (grandTotal > 0) txt += `Общая сумма: ${fmt(grandTotal)}\n`;
   }
 
   // Копируем в буфер
   navigator.clipboard.writeText(txt)
-    .then(() => showToast(isVyezd ? '✅ Наряд «Выезд» скопирован!' : '✅ Наряд «Прокат» скопирован!'))
+    .then(() => showToast(isVyezd ? '✅ Карточка выезда скопирована!' : '✅ Карточка проката скопирована!'))
     .catch(() => {
       const ta = document.createElement('textarea');
       ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;';
