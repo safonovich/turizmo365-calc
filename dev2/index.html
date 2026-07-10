@@ -42,14 +42,14 @@ body {
 .header {
   background: linear-gradient(135deg, #14532d 0%, #15803d 55%, #22c55e 100%);
   color: white;
-  padding: 14px 16px 12px;
+  padding: 8px 16px;
   text-align: center;
   position: sticky;
   top: 0;
   z-index: 50;
   box-shadow: 0 2px 14px rgba(21,128,61,0.45);
 }
-.header-logo { height: 38px; display: block; margin: 0 auto 6px; }
+.header-logo { height: 36px; display: block; margin: 0 auto; }
 .header h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.3px; }
 .header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
 
@@ -384,6 +384,9 @@ body {
   padding: 8px 14px max(10px, env(safe-area-inset-bottom));
   box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
   z-index: 100;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 .sticky-row {
   display: flex;
@@ -751,9 +754,10 @@ body {
 
 <!-- HEADER -->
 <div class="header">
-  <img src="./logo.png" class="header-logo" onerror="this.style.display='none'" alt="">
-  <h1>TURIZMO 365</h1>
-  <p>Внутренний калькулятор аренды</p>
+  <img src="./logo.png" class="header-logo"
+    onerror="this.style.display='none';document.getElementById('header-title').style.display='block'"
+    alt="TURIZMO 365">
+  <div id="header-title" style="display:none;font-size:17px;font-weight:800;letter-spacing:0.3px;">TURIZMO 365</div>
 </div>
 
 <!-- VIP LEVEL -->
@@ -1509,7 +1513,8 @@ function updateTotals() {
 
   const daysEl = document.getElementById('days-num');
   if (daysEl) daysEl.value = S.days;
-  document.getElementById('rate-badge').textContent = rateLabel(S.days);
+  const rateEl = document.getElementById('rate-badge');
+  if (rateEl) rateEl.textContent = rateLabel(S.days);
 
   // Breakdown
   const bEl = document.getElementById('breakdown');
@@ -1580,16 +1585,11 @@ function setDateTo(val) {
 }
 
 function calcDaysFromDates() {
-  if (S.dateFrom && S.dateTo && S.dateTo > S.dateFrom) {
+  if (S.dateFrom && S.dateTo) {
     const diff = Math.round((new Date(S.dateTo) - new Date(S.dateFrom)) / 86400000);
-    if (diff >= 1) {
-      S.days = Math.min(21, diff);
-      const el = document.getElementById('days-num');
-      if (el) el.value = S.days;
-      renderAll();
-      return;
-    }
+    S.days = Math.max(1, Math.min(21, diff));
   }
+  updateDateRangeLabel();
   renderAll();
 }
 
@@ -2315,25 +2315,28 @@ function openHistory() {
 }
 
 function restoreFromHistory(entry) {
-  S.qty = JSON.parse(JSON.stringify(entry.qty));
-  S.svcs = JSON.parse(JSON.stringify(entry.svcs));
-  S.svcPrices = JSON.parse(JSON.stringify(entry.svcPrices));
-  S.days = entry.days;
-  S.dateFrom = entry.dateFrom || '';
-  S.dateTo = entry.dateTo || '';
-  S.vip = entry.vip || 'ррц';
-  transportPrice = entry.transportPrice || 0;
-  S.dlvResult = null;
+  try {
+    S.qty = JSON.parse(JSON.stringify(entry.qty || {}));
+    S.svcs = JSON.parse(JSON.stringify(entry.svcs || {}));
+    S.svcPrices = JSON.parse(JSON.stringify(entry.svcPrices || {}));
+    S.days = entry.days || 1;
+    S.dateFrom = entry.dateFrom || '';
+    S.dateTo = entry.dateTo || '';
+    S.vip = entry.vip || 'ррц';
+    transportPrice = entry.transportPrice || 0;
+    S.dlvResult = null;
 
-  // Обновляем кнопки VIP
-  const vipOrder = ['ррц', 'базовый', 'стандартный', 'премиум'];
-  document.querySelectorAll('.vip-btn').forEach((b, i) => {
-    b.classList.toggle('active', vipOrder[i] === S.vip);
-  });
+    const vipOrder = ['ррц', 'базовый', 'стандартный', 'премиум'];
+    document.querySelectorAll('.vip-btn').forEach((b, i) => {
+      b.classList.toggle('active', vipOrder[i] === S.vip);
+    });
 
-  updateDateRangeLabel();
-  renderAll();
-  showToast('✅ Расчёт восстановлен!');
+    updateDateRangeLabel();
+    renderAll();
+    showToast('✅ Расчёт восстановлен!');
+  } catch(e) {
+    showToast('❌ Ошибка восстановления: ' + e.message);
+  }
 }
 
 // ════════════════════════════════════════════
@@ -2450,7 +2453,7 @@ function selectDtpDay(d) { _dtpDay = d; renderDtpCal(); }
 function selectDtpTime(t) {
   _dtpTime = t;
   renderDtpTimes();
-  if (_dtpDay) confirmDtp(); // авто-закрытие как только выбраны и день, и время
+  // только подсвечиваем — закрытие через кнопку «Подтвердить»
 }
 function dtpPrevMonth() {
   _dtpMonth--; if (_dtpMonth < 0) { _dtpMonth = 11; _dtpYear--; } renderDtpCal();
