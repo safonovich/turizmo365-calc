@@ -2084,6 +2084,54 @@ function restoreFromHistory(entry) {
 //  INIT
 // ════════════════════════════════════════════
 renderAll();
+
+// ════════════════════════════════════════════
+//  ЖИВЫЕ ЦЕНЫ ИЗ GOOGLE ТАБЛИЦЫ («ТУРИЗМО 365 касса + цены»)
+//  Порядок: дефолты из кода → кэш → свежий JSON с endpoint.
+//  Если таблица недоступна — калькулятор работает как раньше.
+// ════════════════════════════════════════════
+const PRICES_URL = 'https://script.google.com/macros/s/AKfycbxw9bySRktNZhE_5rS89-awSH-UFOQh9SYCmSd4GmrAewSs-RK8v6iiGc2I5aBduw4X/exec?type=prices';
+const PRICES_CACHE_KEY = 't365_prices_remote';
+
+function applyRemotePrices(d) {
+  try {
+    if (!d || !Array.isArray(d.boats) || !d.boats.length) return false;
+    const byId = arr => { const m = {}; (arr || []).forEach(x => m[x.id] = x); return m; };
+    const rb = byId(d.boats), ra = byId(d.acc), rk = byId(d.kemping);
+    BOATS.forEach(b => {
+      const r = rb[b.id]; if (!r) return;
+      if (Array.isArray(r.prices) && r.prices.length === 7) b.prices = r.prices.slice();
+      b.rate8_14 = r.rate8_14; b.rate15_21 = r.rate15_21; b.rate5plus = r.rate5plus;
+      if (r.name) b.name = r.name;
+      if (r.sub) b.sub = r.sub;
+    });
+    ACCS.forEach(a => { const r = ra[a.id]; if (r) { if (r.price7 != null) a.price7 = r.price7; if (r.name) a.name = r.name; if (r.sub) a.sub = r.sub; } });
+    KEMP.forEach(k => { const r = rk[k.id]; if (r) { if (r.price7 != null) k.price7 = r.price7; if (r.name) k.name = r.name; if (r.sub) k.sub = r.sub; } });
+    (d.services || []).forEach(s => { const t = SVCS.find(x => x.id === s.id); if (t && s.price != null) t.price = s.price; });
+    Object.keys(d.rates || {}).forEach(k => { if (SVC_RATES[k] && d.rates[k] && d.rates[k].per != null) SVC_RATES[k].per = d.rates[k].per; });
+    ['boats', 'acc', 'kemping'].forEach(c => { if (d.disc && d.disc[c]) Object.assign(DISC[c], d.disc[c]); });
+    return true;
+  } catch (e) { console.warn('applyRemotePrices:', e); return false; }
+}
+
+(function loadRemotePrices() {
+  // 1) мгновенно применяем последний кэш (если есть)
+  try {
+    const cached = JSON.parse(localStorage.getItem(PRICES_CACHE_KEY) || 'null');
+    if (cached && applyRemotePrices(cached)) renderAll();
+  } catch (e) {}
+  // 2) тянем свежие цены с endpoint
+  fetch(PRICES_URL)
+    .then(r => r.json())
+    .then(d => {
+      if (applyRemotePrices(d)) {
+        try { localStorage.setItem(PRICES_CACHE_KEY, JSON.stringify(d)); } catch (e) {}
+        renderAll();
+      }
+    })
+    .catch(e => console.warn('Цены из таблицы недоступны, работаем на локальных:', e));
+})();
+
 </script>
 </body>
 </html>
