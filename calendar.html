@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TURIZMO 365 — Календарь занятости</title>
+<style>
+  :root{--bg:#f0f4f8;--card:#fff;--primary:#1d4ed8;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+        --ok:#dcfce7;--ok-t:#166534;--warn:#fef9c3;--warn-t:#854d0e;--full:#fee2e2;--full-t:#991b1b;--rep:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;}
+  .wrap{max-width:1200px;margin:0 auto;}
+  h1{font-size:20px;margin:4px 0 12px;display:flex;align-items:center;gap:10px;}
+  h1 small{font-size:12px;color:var(--muted);font-weight:400;}
+  .tabs,.mnav{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+  .tabs button,.mnav button{border:1px solid var(--border);background:var(--card);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;}
+  .tabs button.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .mnav b{font-size:15px;min-width:130px;text-align:center;}
+  .grid-box{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:75vh;}
+  table{border-collapse:collapse;font-size:12px;min-width:100%;}
+  th,td{border:1px solid var(--border);padding:0;text-align:center;min-width:30px;height:30px;}
+  th{background:#f8fafc;font-weight:600;position:sticky;top:0;z-index:2;}
+  th.we{background:#eef2ff;}
+  td.gname,th.gname{position:sticky;left:0;background:var(--card);z-index:3;text-align:left;padding:4px 8px;min-width:150px;max-width:190px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  th.gname{z-index:4;}
+  td.c{cursor:pointer;font-weight:600;}
+  td.ok{background:var(--ok);color:var(--ok-t);}
+  td.warn{background:var(--warn);color:var(--warn-t);}
+  td.full{background:var(--full);color:var(--full-t);}
+  td.na{background:#fafafa;color:#cbd5e1;}
+  .legend{display:flex;gap:14px;margin:10px 2px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+  #detail{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:14px;}
+  #detail .box{background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:18px;}
+  #detail h3{font-size:16px;margin-bottom:4px;}
+  #detail .sub{color:var(--muted);font-size:13px;margin-bottom:12px;}
+  .bk{border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:8px;font-size:13px;}
+  .bk .st{font-size:11px;color:var(--muted);}
+  .bk.cancel{opacity:.55;text-decoration:line-through;}
+  .bk a{color:var(--primary);text-decoration:none;font-size:12px;}
+  #closeD{float:right;border:none;background:none;font-size:18px;cursor:pointer;color:var(--muted);}
+  #status{padding:30px;text-align:center;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📅 Календарь занятости <small id="upd"></small></h1>
+  <div class="tabs" id="tabs"></div>
+  <div class="mnav">
+    <button id="prev">←</button><b id="mlabel"></b><button id="next">→</button>
+  </div>
+  <div class="grid-box"><div id="status">Загружаем брони…</div><table id="grid" style="display:none"></table></div>
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>свободно</span>
+    <span><i style="background:var(--warn)"></i>осталось ≤ 2</span>
+    <span><i style="background:var(--full)"></i>всё занято — субаренда!</span>
+    <span><i style="background:#fafafa;border:1px solid var(--border)"></i>вне сезона графика</span>
+    <span>Клик по ячейке — список броней дня</span>
+  </div>
+</div>
+<div id="detail"><div class="box"><button id="closeD">✕</button><h3 id="dTitle"></h3><div class="sub" id="dSub"></div><div id="dList"></div></div></div>
+
+<script>
+var CAL_URL='https://script.google.com/macros/s/AKfycbxw9bySRktNZhE_5rS89-awSH-UFOQh9SYCmSd4GmrAewSs-RK8v6iiGc2I5aBduw4X/exec?type=calendar';
+var DATA=null, sheetIdx=0, curYM=null;
+var MON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function isCancel(st){return /отмен/i.test(st);}
+function isRepair(st){return /ремонт/i.test(st);}
+
+function busyMap(sheet){ // {'yyyy-mm-dd': {gi: [брони]}}
+  var m={};
+  sheet.bookings.forEach(function(b){
+    if(isCancel(b.st)) return;
+    var d=new Date(b.s+'T00:00:00Z'), e=new Date(b.e+'T00:00:00Z');
+    while(d<=e){
+      var k=d.toISOString().slice(0,10);
+      (m[k]=m[k]||{}); (m[k][b.g]=m[k][b.g]||[]).push(b);
+      d.setUTCDate(d.getUTCDate()+1);
+    }
+  });
+  return m;
+}
+function allBookingsOn(sheet,gi,key){ // включая отменённые — для деталей
+  return sheet.bookings.filter(function(b){ return b.g===gi && b.s<=key && key<=b.e; });
+}
+
+function render(){
+  var sheet=DATA.sheets[sheetIdx];
+  var bm=sheet._bm||(sheet._bm=busyMap(sheet));
+  var y=curYM[0], mo=curYM[1];
+  document.getElementById('mlabel').textContent=MON[mo]+' '+y;
+  var days=new Date(y,mo+1,0).getDate();
+  var minD=sheet.dates[0], maxD=sheet.dates[1];
+  var html='<tr><th class="gname">Инвентарь</th>';
+  for(var d=1;d<=days;d++){
+    var dt=new Date(y,mo,d), we=dt.getDay()===0||dt.getDay()===6;
+    html+='<th class="'+(we?'we':'')+'">'+d+'<br><span style="font-weight:400;color:var(--muted)">'+['вс','пн','вт','ср','чт','пт','сб'][dt.getDay()]+'</span></th>';
+  }
+  html+='</tr>';
+  sheet.groups.forEach(function(g,gi){
+    html+='<tr><td class="gname" title="'+g.name+'">'+g.name+' <span style="color:var(--muted);font-weight:400">('+g.total+')</span></td>';
+    for(var d=1;d<=days;d++){
+      var key=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      if(key<minD||key>maxD){ html+='<td class="na">·</td>'; continue; }
+      var list=(bm[key]&&bm[key][gi])||[];
+      var busy=list.length, free=Math.max(0,g.total-busy);
+      var cls=free===0?'full':(free<=2?'warn':'ok');
+      html+='<td class="c '+cls+'" data-g="'+gi+'" data-k="'+key+'">'+free+'</td>';
+    }
+    html+='</tr>';
+  });
+  var grid=document.getElementById('grid');
+  grid.innerHTML=html; grid.style.display='';
+  document.getElementById('status').style.display='none';
+  grid.querySelectorAll('td.c').forEach(function(td){ td.addEventListener('click',function(){ openDetail(+td.dataset.g, td.dataset.k); }); });
+}
+
+function openDetail(gi,key){
+  var sheet=DATA.sheets[sheetIdx], g=sheet.groups[gi];
+  var list=allBookingsOn(sheet,gi,key);
+  document.getElementById('dTitle').textContent=g.name+' — '+key.split('-').reverse().join('.');
+  var busy=list.filter(function(b){return !isCancel(b.st);}).length;
+  document.getElementById('dSub').textContent='Занято '+busy+' из '+g.total+(g.total-busy===0?' — свободных нет, субаренда!':' · свободно '+(g.total-busy));
+  document.getElementById('dList').innerHTML=list.length?list.map(function(b){
+    return '<div class="bk'+(isCancel(b.st)?' cancel':'')+'"><b>№'+b.u+'</b> '+(b.n||'<i>без подписи</i>')+
+      '<div class="st">'+b.st+' · '+b.s.split('-').reverse().join('.')+' → '+b.e.split('-').reverse().join('.')+'</div>'+
+      (b.l?'<a href="'+b.l+'" target="_blank">Сделка в amoCRM ↗</a>':'')+'</div>';
+  }).join(''):'<p style="color:var(--muted)">Броней нет — всё свободно.</p>';
+  document.getElementById('detail').style.display='flex';
+}
+
+function init(data){
+  DATA=data;
+  document.getElementById('upd').textContent='обновлено '+new Date(data.updated).toLocaleString('ru-RU').slice(0,17);
+  var tabs=document.getElementById('tabs');
+  tabs.innerHTML='';
+  data.sheets.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.textContent=/кемпинг/i.test(s.name)?'🏕 Кемпинг':'🚣 Сплав';
+    if(i===sheetIdx)b.className='on';
+    b.onclick=function(){sheetIdx=i;document.querySelectorAll('.tabs button').forEach(function(x){x.className='';});b.className='on';render();};
+    tabs.appendChild(b);
+  });
+  var today=new Date();
+  var lo=new Date(data.sheets[0].dates[0]), hi=new Date(data.sheets[0].dates[1]);
+  var start=(today>=lo&&today<=hi)?today:lo;
+  curYM=[start.getFullYear(),start.getMonth()];
+  document.getElementById('prev').onclick=function(){curYM[1]--;if(curYM[1]<0){curYM[1]=11;curYM[0]--;}render();};
+  document.getElementById('next').onclick=function(){curYM[1]++;if(curYM[1]>11){curYM[1]=0;curYM[0]++;}render();};
+  render();
+}
+
+document.getElementById('closeD').onclick=function(){document.getElementById('detail').style.display='none';};
+document.getElementById('detail').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+
+var cached=null;
+try{cached=JSON.parse(localStorage.getItem('t365_cal_cache')||'null');}catch(e){}
+if(cached&&cached.sheets)init(cached);
+fetch(CAL_URL).then(function(r){return r.json();}).then(function(d){
+  if(!d||!d.sheets||!d.sheets.length)throw 0;
+  try{localStorage.setItem('t365_cal_cache',JSON.stringify(d));}catch(e){}
+  init(d);
+}).catch(function(e){
+  if(!DATA)document.getElementById('status').textContent='Не удалось загрузить данные календаря. Проверь интернет или endpoint.';
+});
+</script>
+</body>
+</html>
